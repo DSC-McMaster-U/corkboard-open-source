@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://dev:dev@postgres:5432/corkboard
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: corkboard
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
