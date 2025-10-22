@@ -1,20 +1,31 @@
 # Corkboard Backend - Exploration Branch
 
-This is an exploration branch for the backend architecture discussion.
+This is a working Express + PostgreSQL + Docker setup in `feature/backend-exploration` branch.
 
 ## Current Setup
 
 - **Framework**: Express.js + TypeScript
 - **Database**: PostgreSQL (via Docker)
 - **Containerization**: Docker + Docker Compose
+    - for API + PostgreSQL databse
+
+## Next Steps
+- Team review of current setup
+- Auth approach decisions
+- Database schema design (for week1 MVP)
+
 
 ## Quick Start
 
 ```bash
+# Fetch latest changes
+git fetch
+git switrch feature/backend-exploration
+
 cd backend/
 
 # Start with Docker Compose
-docker compose up -d
+docker compose up
 
 # Or run locally (requires PostgreSQL)
 npm install
