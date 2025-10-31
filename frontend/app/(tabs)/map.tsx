@@ -20,14 +20,11 @@ export default function MapScreen() {
     <View className="flex-1">
       
       {/* Map background */}
-      <MapView
-          style={{ flex: 1 }}
-          provider={PROVIDER_GOOGLE}
-        />
+      <MapView style={{ flex: 1 }} provider={PROVIDER_GOOGLE}/>
    
       {/* OVERLAYS */}
       {/* Header card */}
-      <View className="absolute inset-x-0 top-0 bg-[#b87454] h-28 px-4 pb-3 justify-end">
+      <View className="absolute inset-x-0 top-0 bg-[#AE6E4E] h-28 px-4 pb-3 justify-end">
         <View className="flex-row items-center justify-between">
           <Text className="text-white text-2xl font-bold">Shows near you</Text>
           <Avatar />
@@ -35,9 +32,11 @@ export default function MapScreen() {
       </View>
 
       {/* Bottom panel */}
-      <BottomSheet snapPoints={snapPoints}>
-        <BottomSheetView style={{ padding: 16 }}>
-          <Text>This is awesome!</Text>
+      <BottomSheet snapPoints={snapPoints} 
+        backgroundStyle={{ backgroundColor: '#F6D0AE' }}
+        handleIndicatorStyle={{ backgroundColor: '#FFF0E2' }} >
+        <BottomSheetView style={{ padding: 16 }} >
+          <Text>TODO</Text>
         </BottomSheetView>
       </BottomSheet>
 
