@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, TextInput } from 'react-native';
 
 export function ExploreSearch() {
-  const [searchText, setSearchText] = React.useState('');
+  const [searchText, setSearchText] = useState('');
 
   return (
     <View>
@@ -12,7 +12,7 @@ export function ExploreSearch() {
           placeholder='Search artists, songs, shows...'
           value={searchText}
           onChangeText={setSearchText}
-          placeholderTextColor='111111'
+          placeholderTextColor='#333333'
         />
       </View>
     </View>

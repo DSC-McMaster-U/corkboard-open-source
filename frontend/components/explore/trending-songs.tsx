@@ -12,7 +12,7 @@ function TrendingCard({ artist, song, color }: TrendingCardProps) {
   return (
     <TouchableOpacity onPress={() => Alert.alert(song)}>
       <View 
-        className='rounded-2xl px-4 h-16 flex-row items-center bg-secondary'
+        className='rounded-2xl px-4 py-3 flex-row items-center bg-secondary'
       >
         <View 
           className='w-8 h-8 rounded-lg mr-3'
