@@ -40,3 +40,22 @@ export const trendingSongs = [
     color: "#9B59B6"
   }
 ]
+export const shows = [
+    {
+      title: 'Nov 13',
+      subtitle: 'Dame D.O.L.L.A.',
+      imageUrl: 'https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&q=80'
+    },
+    {
+      title: 'Jazz Shows',
+      subtitle: 'Local Hamilton Jazz shows near you...',
+      backgroundColor: '#B8856A',
+      isGenre: true
+    },
+    {
+      title: 'Hip-Hop',
+      subtitle: 'Local Hamilton Hip-Hop shows near you...',
+      backgroundColor: '#C19A6B',
+      isGenre: true
+    }
+  ];

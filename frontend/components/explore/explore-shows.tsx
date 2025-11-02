@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { shows } from '@/constants/mock-data';
 
 interface ShowCardProps {
   title: string;
@@ -37,25 +38,6 @@ function ShowCard({ title, subtitle, imageUrl, backgroundColor, isGenre }: ShowC
 }
 
 export function ExploreShows() {
-  const shows = [
-    {
-      title: 'Nov 13',
-      subtitle: 'Dame D.O.L.L.A.',
-      imageUrl: 'https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&q=80'
-    },
-    {
-      title: 'Jazz Shows',
-      subtitle: 'Local Hamilton Jazz shows near you...',
-      backgroundColor: '#B8856A',
-      isGenre: true
-    },
-    {
-      title: 'Hip-Hop',
-      subtitle: 'Local Hamilton Hip-Hop shows near you...',
-      backgroundColor: '#C19A6B',
-      isGenre: true
-    }
-  ];
 
   return (
     <View>
