@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-seed-job
+  namespace: default
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: seed
+          image: postgres:15
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              value: "corkboard"
+            - name: POSTGRES_USER
+              value: "postgres"
+          command: ["/bin/sh","-c"]
+          args:
+            - |
+              # wait for postgres to be ready
+              until pg_isready -h postgres-svc -p 5432; do echo "waiting for postgres..."; sleep 2; done
+              echo "Postgres is ready. Running seed SQL..."
+              psql "host=postgres-svc user=$POSTGRES_USER dbname=$POSTGRES_DB" -f /seed/init.sql
+          volumeMounts:
+            - name: seed-sql
+              mountPath: /seed
+      volumes:
+        - name: seed-sql
+          configMap:
+            name: postgres-init-sql
