@@ -1,59 +1,71 @@
-# Corkboard Backend - Week 2
+# Corkboard Backend - Week 3
 
-## Basic Team Setup
+## Quick Start
 
 ### **1. Get Supabase Access**
-- **Project URL**: `https://glvtnapwaafqcahwkxfa.supabase.co`
-- **Ask Billy** to invite you to the Supabase project
+- Project URL: `https://supabase.com/dashboard/project/dniawpahwcqtvcnaaexv`
+- Ask Billy to invite you to the Supabase project (if you haven't already done so!)
 
 ### **2. Local Setup**
 ```bash
-# Pull the change
-git fetch origin
-git switch feature/supabase-setup
 cd backend/
-
-# Copy environment file
 cp env.example .env
-
-# Install dependencies
 npm install
-
-# Start the API
 npm run dev
 ```
 
 ### **3. Test Endpoints**
-- **Health**: `http://localhost:3000/api/health`
-- **Events**: `http://localhost:3000/api/events`
-- **Venues**: `http://localhost:3000/api/venues`
+- Health: `http://localhost:3000/api/health`
+- Events: `http://localhost:3000/api/events`
+- Venues: `http://localhost:3000/api/venues`
 
-### **4. Database Already Set Up!**
-- Some sample starter data are loaded.
+## Project Structure
 
-## Initial Schema
+**Three-Tier Architecture (Presentation → Application → Database):**
 
-### **Database Tables:**
-- **venues** - Hamilton music venues
-- **events** - Music shows
-- **users** - App users
-- **genres** - Music categories
-- **user_bookmarks** - Saved events
-- **event_genres** - Event categorization
+```
+src/
+├── app.ts              # Main entry point
+├── routes/             # API endpoints (RESTful APIs)
+│   ├── events.ts
+│   ├── venues.ts
+│   └── health.ts
+├── services/           # Business logic
+│   ├── eventService.ts
+│   ├── venueService.ts
+│   └── healthService.ts
+└── db/                 # Database access
+    └── supabaseClient.ts
+```
 
-### **Sample Data:**
-- **4 venues** in Hamilton
-- **3 sample events**
-- **7 music genres**
+**Request Flow:** Route → Service → Database → Supabase
 
-### **API Endpoints:**
-- `GET /api/health` - Check connection
+## Database
+
+**Tables:** venues, events, users, genres, user_bookmarks, event_genres  
+**Sample Data:** 4 venues, 3 events, 7 genres loaded
+
+## API Endpoints (current)
+
+- `GET /api/health` - Health check
 - `GET /api/events` - List events
 - `GET /api/venues` - List venues
 
-## Next Steps
+## Development
 
-1. **Get Supabase access** from Billy
-2. **Set up local environment**
-3. **Test API endpoints** (database already ready!)
-4. **Start building features**
+**Adding Features:**
+1. Create route file in `routes/`
+2. Create service file in `services/`
+3. Add route to `app.ts`
+4. Add database methods to `db/supabaseClient.ts` if needed
+
+## Future Enhancements
+
+**Post-MVP Considerations:**
+- **Prisma ORM**
+- **Web Scraping**
+- **Geographic Features**
+- **Advanced Features**
+- **Testing**
+
+**Note:** Current structure supports all of these, as database layer is isolated, routes/services are modular. Add enhancements as needed without major refactoring.
