@@ -1,11 +1,9 @@
 import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { FontAwesome } from "@expo/vector-icons";
-import BottomSheet, {BottomSheetView} from '@gorhom/bottom-sheet';
-import { useMemo, useState } from "react";
-import { Slider } from '@miblanchard/react-native-slider';
+import { useState } from "react";
 import EventModal from '@/components/event-modal';
+import BottomPanel from '@/components/bottom-panel/bottom-panel'; 
 
-import { Link } from 'expo-router';
 
 type InfoBoxType = {show_name: string, artist: string, date: string, time: string, location: string, genre: string, image: string;};
 
@@ -72,15 +70,16 @@ function InfoBox({show_name, artist, date, time, location, genre, image, onPress
 
 export default function EventsScreen() {
 
-  const snapPoints = useMemo( () => ['10%', '50%'], []);
-  const [range, setRange] = useState<[number, number]>([20, 80]);  // set up state for ticket price slider bar
+  const [range, setRange] = useState<[number, number]>([10, 70]);  // set up state for ticket price slider bar
   const [selectedEvent, setSelectedEvent] = useState<any>(null); // store event object that user clicks
   const [modalVisible, setModalVisible] = useState(false); // modal state to open/close event popup
 
   const eventList = [
     {show_name: "The Art of Loving", artist: "Olivia Dean", date: "Dec 3", time: "8:00pm", location: "FirstOntario Hall", genre: "Pop", image: "https://hips.hearstapps.com/hmg-prod/images/lead-press-2-68e815b83e780.jpg?crop=1.00xw:0.653xh;0,0.0410xh&resize=1120:*", description: "This is a description."},
     {show_name: "No Hard Feelings", artist: "The Beaches", date: "Dec 6", time: "8:00pm", location: "TD Coliseum", genre: "Rock", image: "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b", description: "This is a description."},
-    {show_name: "World Tour", artist: "The Neighbourhood", date: "Dec 12", time: "7:00pm", location: "FirstOntario Hall", genre: "Rock", image: "https://media.pitchfork.com/photos/5a9f0c13b848c0268b2016bb/1:1/w_450%2Cc_limit/The%2520Neighbourhood.jpg", description: "This is a description."}
+    {show_name: "World Tour", artist: "The Neighbourhood", date: "Dec 12", time: "7:00pm", location: "FirstOntario Hall", genre: "Rock", image: "https://media.pitchfork.com/photos/5a9f0c13b848c0268b2016bb/1:1/w_450%2Cc_limit/The%2520Neighbourhood.jpg", description: "This is a description."},
+    {show_name: "Unreal Earth Tour", artist: "Hozier", date: "Dec 13", time: "6:00pm", location: "FirstOntario Hall", genre: "Rock", image: "https://s1.ticketm.net/dam/a/9fe/d6cc61a9-9850-4e4b-9a7e-893c63c629fe_RETINA_PORTRAIT_3_2.jpg", description: "This is a description."},
+    {show_name: "World Tour", artist: "Jonas Brothers", date: "Dec 14", time: "7:00pm", location: "TD Coliseum", genre: "Pop", image: "https://s1.ticketm.net/dam/a/257/0f1a51cd-670d-41ca-bb6f-775ea30f6257_RETINA_PORTRAIT_3_2.jpg", description: "This is a description."}
   ]
 
   return (
@@ -105,49 +104,8 @@ export default function EventsScreen() {
 />
     
      {/* Bottom panel */}
-      <BottomSheet snapPoints={snapPoints} 
-        backgroundStyle={{ backgroundColor: '#F6D0AE' }}
-        handleIndicatorStyle={{ backgroundColor: '#FFF0E2' }} >
-        <BottomSheetView style={{ padding: 16 }} >
+      <BottomPanel range={range} setRange={setRange}/>
 
-          <Text style={{ marginBottom: 10 }}>Ticket price:</Text>
-
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
-            {/* Min ticket price */}
-            <Text> ${range[0].toFixed(0)}</Text>
-
-            {/* Max ticket price */}
-            <Text>${range[1].toFixed(0)}</Text>
-          </View>
-
-
-          {/* Slider bar for ticket price range */}
-          <Slider
-            value={range} 
-            onValueChange={(value: number | number[]) => {
-              // Type assertion for the range (always a 2-tuple of numbers even if the numbers are equal)
-              const rangeValue: [number, number] = Array.isArray(value)
-                ? [value[0], value[1]] 
-                : [value, value]; 
-              setRange(rangeValue);
-            }}
-            minimumValue={0}
-            maximumValue={100}
-            step={1}
-            minimumTrackTintColor="#FFF0E2"
-            maximumTrackTintColor="#FFF0E2"
-            thumbTintColor="#E8894A"
-          />
-
-        {/* Calendar buttons */}
-        <View
-          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-          <View style={{ width: 174, height: 45, backgroundColor: '#FFF0E2', borderRadius: 8}}/>
-          <View style={{ width: 174, height: 45, backgroundColor: '#FFF0E2', borderRadius: 8}}/>
-        </View>
-
-      </BottomSheetView>
-      </BottomSheet>
     </View>
 
   );
