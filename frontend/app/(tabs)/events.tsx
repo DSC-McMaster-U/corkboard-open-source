@@ -1,154 +1,70 @@
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { FontAwesome } from "@expo/vector-icons";
 import BottomSheet, {BottomSheetView} from '@gorhom/bottom-sheet';
 import { useMemo, useState } from "react";
 import { Slider } from '@miblanchard/react-native-slider';
+import EventModal from '@/components/event-modal';
 
 import { Link } from 'expo-router';
 
-type InfoBoxType = {show_name: string, artist: string, date: string, time: string, location: string, genre: string;};
+type InfoBoxType = {show_name: string, artist: string, date: string, time: string, location: string, genre: string, image: string;};
 
-function InfoBox({show_name, artist, date, time, location, genre}: InfoBoxType) {
+function InfoBox({show_name, artist, date, time, location, genre, image, onPress}: InfoBoxType & { onPress: () => void }) {
   return (
-    <View
-      style={{
-        width: 360,
-        height: 120,
-        backgroundColor: '#3e0000',
-        borderRadius: 8,
-        marginVertical: 4,
-        position: 'relative',
-      }}
-    >
-
-      {/* Show Name */}
-      <Text
-        style={{
-          position: 'absolute',
-          top: 10,
-          left: 15,
-          fontSize: 18,
-          fontWeight: 'bold',
-          color: 'white'
-        }}
-      >
-        {show_name}
-      </Text>
-
-      {/* Artist */}
-      <Text
-        style={{
-          position: 'absolute',
-          top: 27,
-          left: 15,
-          fontSize: 18,
-          color: 'white'
-        }}
-      >
-        {artist}
-      </Text>
-
-      {/* Date */}
+    <TouchableOpacity onPress={onPress}>
       <View
         style={{
-          position: 'absolute',
-          bottom: 25,
-          left: 15,
-          flexDirection: 'row', // place icon and text side by side
-          alignItems: 'center', // vertically align them
+          width: 360,
+          height: 135,
+          backgroundColor: '#3e0000',
+          borderRadius: 8,
+          marginVertical: 4,
+          position: 'relative',
         }}
-    >
-        <FontAwesome name="calendar" size={14} color="white" />
+      >
+
+        {/* Show Name */}
         <Text
-          style={{
-            fontSize: 14,
-            color: 'white',
-            marginLeft: 6, // space between icon and text
-          }}
-        >
-          {date}
+          style={{ position: 'absolute', top: 10, left: 15, fontSize: 18, fontWeight: 'bold', color: 'white'}}>
+          {show_name}
         </Text>
-      </View>
 
-      {/* Time */}
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 6,
-          left: 15,
-          flexDirection: 'row', 
-          alignItems: 'center', 
-        }}
-      >
-        <FontAwesome name="clock-o" size={14} color="white" />
-        <Text
-          style={{
-            fontSize: 14,
-            color: 'white',
-            marginLeft: 6, 
-          }}
-        >
-          {time}
+        {/* Artist */}
+        <Text style={{ position: 'absolute', top: 27, left: 15, fontSize: 16, color: 'white'}}>
+          {artist}
         </Text>
-      </View>
 
-      {/* Location */}
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 45,
-          left: 15,
-          flexDirection: 'row', 
-          alignItems: 'center', 
-        }}
-      >
-        <FontAwesome name="map-marker" size={14} color="white" />
-        <Text
-          style={{
-            fontSize: 14,
-            color: 'white',
-            marginLeft: 6, 
-          }}
-        >
-          {location}
-        </Text>
-      </View>
+        {/* Location */}
+        <View style={{ position: 'absolute', bottom: 63, left: 15, flexDirection: 'row', alignItems: 'center' }}>
+          <FontAwesome name="map-marker" size={15} color="white" />
+          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{location}</Text>
+        </View>
 
-      {/* Genre */}
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 6,
-          left: 120,
-          flexDirection: 'row', 
-          alignItems: 'center', 
-        }}
-      >
-        <FontAwesome name="music" size={14} color="white" />
-        <Text
-          style={{
-            fontSize: 14,
-            color: 'white',
-            marginLeft: 6, 
-          }}
-        >
-          {genre}
-        </Text>
-      </View>
+        {/* Date */}
+        <View style={{ position: 'absolute', bottom: 44, left: 13, flexDirection: 'row', alignItems: 'center' }}>
+          <FontAwesome name="calendar" size={14} color="white" />
+          <Text style={{fontSize: 14, color: 'white', marginLeft: 5}}>{date}</Text>
+        </View>
 
-      {/* Photo rectangle */}
-      <View
-      style={{
-        width: 98,
-        height: 92,
-        backgroundColor: '#f8f8f8',
-        borderRadius: 3,
-        position: 'absolute',
-        top: 14,
-        right: 14,
-      }}
-      ></View> 
-    </View>
+        {/* Time */}
+        <View style={{ position: 'absolute', bottom: 25, left: 13, flexDirection: 'row', alignItems: 'center'}}>
+          <FontAwesome name="clock-o" size={14} color="white" />
+          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{time}</Text>
+        </View>
+
+        {/* Genre */}
+        <View style={{ position: 'absolute', bottom: 7, left: 11, flexDirection: 'row', alignItems: 'center' }}>
+          <FontAwesome name="music" size={14} color="white" />
+          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6}}>{genre}</Text>
+        </View>
+
+        {/* Photo rectangle */}
+        <Image
+          source={{ uri: image }} 
+          style={{ width: 98, height: 92, borderRadius: 3, position: 'absolute', top: 22, right: 14 }}
+        />
+      </View>
+    </TouchableOpacity>
   );
 }
 
@@ -158,18 +74,35 @@ export default function EventsScreen() {
 
   const snapPoints = useMemo( () => ['10%', '50%'], []);
   const [range, setRange] = useState<[number, number]>([20, 80]);  // set up state for ticket price slider bar
+  const [selectedEvent, setSelectedEvent] = useState<any>(null); // store event object that user clicks
+  const [modalVisible, setModalVisible] = useState(false); // modal state to open/close event popup
+
+  const eventList = [
+    {show_name: "The Art of Loving", artist: "Olivia Dean", date: "Dec 3", time: "8:00pm", location: "FirstOntario Hall", genre: "Pop", image: "https://hips.hearstapps.com/hmg-prod/images/lead-press-2-68e815b83e780.jpg?crop=1.00xw:0.653xh;0,0.0410xh&resize=1120:*", description: "This is a description."},
+    {show_name: "No Hard Feelings", artist: "The Beaches", date: "Dec 6", time: "8:00pm", location: "TD Coliseum", genre: "Rock", image: "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b", description: "This is a description."},
+    {show_name: "World Tour", artist: "The Neighbourhood", date: "Dec 12", time: "7:00pm", location: "FirstOntario Hall", genre: "Rock", image: "https://media.pitchfork.com/photos/5a9f0c13b848c0268b2016bb/1:1/w_450%2Cc_limit/The%2520Neighbourhood.jpg", description: "This is a description."}
+  ]
 
   return (
     <View className="flex-1 flex-col justify-start items-center bg-[#FFF0E2]">
       <ScrollView contentContainerStyle={{paddingTop: 120, paddingBottom: 150, alignItems: 'center'}}>
-        <InfoBox show_name="Show Name" artist="Artist" date="Dec 3" time="8:00pm" location="Location" genre="genre"/>
-        <InfoBox show_name="Show Name" artist="Artist" date="Dec 20" time="8:00pm" location="Location" genre="genre"/>
-        <InfoBox show_name="Show Name" artist="Artist" date="Dec 21" time="8:00pm" location="Location" genre="genre"/>
-        <InfoBox show_name="Show Name" artist="Artist" date="Dec 24" time="8:00pm" location="Location" genre="genre"/>
-        <InfoBox show_name="Show Name" artist="Artist" date="Dec 24" time="8:00pm" location="Location" genre="genre"/>
-        <InfoBox show_name="Show Name" artist="Artist" date="Dec 24" time="8:00pm" location="Location" genre="genre"/>
+        {eventList.map((event, index) => (
+          <InfoBox
+            key={index}
+            {...event}
+            onPress={() => {
+              setSelectedEvent(event);
+              setModalVisible(true);
+            }}
+          />
+      ))}
       </ScrollView>
-      {/* Rectangle 1 */}
+      
+      <EventModal
+  visible={modalVisible}
+  onClose={() => setModalVisible(false)}
+  data={selectedEvent}
+/>
     
      {/* Bottom panel */}
       <BottomSheet snapPoints={snapPoints} 
@@ -177,20 +110,14 @@ export default function EventsScreen() {
         handleIndicatorStyle={{ backgroundColor: '#FFF0E2' }} >
         <BottomSheetView style={{ padding: 16 }} >
 
-          <Text style={{ marginBottom: 10 }}>
-            Ticket price:
-          </Text>
+          <Text style={{ marginBottom: 10 }}>Ticket price:</Text>
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
             {/* Min ticket price */}
-            <Text>
-              ${range[0].toFixed(0)}
-            </Text>
+            <Text> ${range[0].toFixed(0)}</Text>
 
             {/* Max ticket price */}
-            <Text>
-              ${range[1].toFixed(0)}
-            </Text>
+            <Text>${range[1].toFixed(0)}</Text>
           </View>
 
 
@@ -214,28 +141,9 @@ export default function EventsScreen() {
 
         {/* Calendar buttons */}
         <View
-          style={{
-            flexDirection: 'row',       
-            justifyContent: 'space-between', 
-            alignItems: 'center',       
-          }}
-        >
-          <View
-            style={{
-              width: 174,
-              height: 45,
-              backgroundColor: '#FFF0E2',
-              borderRadius: 8,
-            }}
-          />
-          <View
-            style={{
-              width: 174,
-              height: 45,
-              backgroundColor: '#FFF0E2',
-              borderRadius: 8,
-            }}
-          />
+          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+          <View style={{ width: 174, height: 45, backgroundColor: '#FFF0E2', borderRadius: 8}}/>
+          <View style={{ width: 174, height: 45, backgroundColor: '#FFF0E2', borderRadius: 8}}/>
         </View>
 
       </BottomSheetView>
