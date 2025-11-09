@@ -10,12 +10,9 @@ router.get(
     "/get",
     authService.validateToken,
     async (req: Request, res: Response) => {
-        /*if (req.user == undefined) {
-            res.status(401);
-            return;
-        }*/
+        let user = authService.getUser(res);
 
-        res.status(200).json(req.query.user);
+        res.status(200).json({ user: user });
     }
 );
 
@@ -24,12 +21,12 @@ router.post("/create", async (req: Request, res: Response) => {
     let { name, email } = req.params;
 
     if (name === "" || name === undefined) {
-        res.status(412).json({ message: "Non-empty name is required" });
+        res.status(412).json({ error: "Non-empty name is required" });
         return;
     }
 
     if (email === "" || email === undefined) {
-        res.status(412).json({ message: "Non-empty email is required" });
+        res.status(412).json({ error: "Non-empty email is required" });
         return;
     }
 
@@ -39,7 +36,7 @@ router.post("/create", async (req: Request, res: Response) => {
             res.status(200);
         })
         .catch((err: Error) => {
-            res.status(500).json({ message: err });
+            res.status(500).json({ error: err });
         });
 });
 

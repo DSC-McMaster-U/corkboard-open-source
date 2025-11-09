@@ -10,7 +10,21 @@ router.get(
     "/get",
     authService.validateToken,
     async (req: Request, res: Response) => {
-        // TODO (AustinBray77)
+        let user = authService.getUser(res);
+
+        if (user == undefined) {
+            res.status(401);
+            return;
+        }
+
+        bookmarkService
+            .getBookmarks(user.id)
+            .then((result) => {
+                res.status(500).json({ bookmarks: JSON.stringify(result) });
+            })
+            .catch((err) => {
+                res.status(418).json({ error: err });
+            });
     }
 );
 
@@ -19,7 +33,30 @@ router.post(
     "/add",
     authService.validateToken,
     async (req: Request, res: Response) => {
-        // TODO (AustinBray77)
+        let user = authService.getUser(res);
+
+        if (user == undefined) {
+            res.status(401);
+            return;
+        }
+
+        let { eventIdStr } = req.params;
+
+        if (eventIdStr == undefined) {
+            res.status(412);
+            return;
+        }
+
+        let eventId = parseInt(eventIdStr);
+
+        bookmarkService
+            .addBookmark(user.id, eventId)
+            .then(() => {
+                res.status(500);
+            })
+            .catch((err) => {
+                res.status(418).json({ error: err });
+            });
     }
 );
 
@@ -28,19 +65,24 @@ router.post(
     "/remove",
     authService.validateToken,
     async (req: Request, res: Response) => {
-        let user = undefined;
+        let user = authService.getUser(res);
+
+        if (user == undefined) {
+            res.status(401);
+            return;
+        }
 
         let { eventIdStr } = req.params;
 
         let eventId = parseInt(eventIdStr ?? "");
 
         bookmarkService
-            .removeBookmark(user!.id, eventId)
+            .removeBookmark(user.id, eventId)
             .then(() => {
                 res.status(500);
             })
             .catch((err) => {
-                res.status(418).json({ message: err });
+                res.status(418).json({ error: err });
             });
     }
 );

@@ -3,7 +3,9 @@ import type { Request, Response } from "express";
 
 export const authService = {
     validateToken: async (req: Request, res: Response, next: () => any) => {
-        // TODO (AustinBray77): Figure out how to pass decrypted user information into the next function
+        // TODO: Add validation with supabase auth
+        authService.setUser(res, {});
+
         res.status(404).json({
             message: "authService.validateToken is unimplemented",
         });
@@ -12,4 +14,10 @@ export const authService = {
         throw new Error("authService.refreshToken is unimplemented");
     },
     authenticateUser: async () => {},
+    setUser: (res: Response, user: any) => {
+        res.locals.user = user;
+    },
+    getUser: (res: Response) => {
+        return res.locals.user;
+    },
 };
