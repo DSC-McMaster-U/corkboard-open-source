@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { shows } from '@/constants/mock-data';
+import { router } from 'expo-router';
 
 interface ShowCardProps {
   title: string;
@@ -11,8 +12,15 @@ interface ShowCardProps {
 }
 
 function ShowCard({ title, subtitle, imageUrl, backgroundColor, isGenre }: ShowCardProps) {
+  const handlePress = () => {
+    router.push({
+      pathname: '/shows/[showName]',
+      params: { showName: title }
+    });
+  };
+
   return (
-    <TouchableOpacity className='w-36 mr-4'>
+    <TouchableOpacity className='w-36 mr-4' onPress={handlePress}>
       <View 
         className='rounded-2xl h-36 w-36 mb-2 justify-center items-center overflow-hidden'
         style={{ backgroundColor: backgroundColor || '#94a3b8' }}
@@ -38,7 +46,6 @@ function ShowCard({ title, subtitle, imageUrl, backgroundColor, isGenre }: ShowC
 }
 
 export function ExploreShows() {
-
   return (
     <View>
       <ScrollView 
