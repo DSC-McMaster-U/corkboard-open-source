@@ -5,22 +5,22 @@ import { authService } from "../services/authService.js";
 
 const router = express.Router();
 
-// GET /api/bookmarks/get - Returns all of the bookmarks for a given user
+// GET /api/bookmarks/ - Returns all of the bookmarks for a given user
 router.get(
-    "/get",
+    "/",
     authService.validateToken,
     async (req: Request, res: Response) => {
-        let user = authService.getUser(res);
+        const user = authService.getUser(res);
 
         if (user == undefined) {
-            res.status(401);
+            res.status(401).json({ error: "Unauthorized" });
             return;
         }
 
         bookmarkService
             .getBookmarks(user.id)
             .then((result) => {
-                res.status(500).json({ bookmarks: JSON.stringify(result) });
+                res.status(200).json({ bookmarks: JSON.stringify(result) });
             })
             .catch((err) => {
                 res.status(418).json({ error: err });
@@ -28,31 +28,29 @@ router.get(
     }
 );
 
-// POST /api/bookmarks/add - Adds a bookmark for a given event to a given user
+// POST /api/bookmarks/ - Adds a bookmark for a given event to a given user
 router.post(
-    "/add",
+    "/",
     authService.validateToken,
     async (req: Request, res: Response) => {
         let user = authService.getUser(res);
 
         if (user == undefined) {
-            res.status(401);
+            res.status(401).json({ error: "Unauthorized" });
             return;
         }
 
-        let { eventIdStr } = req.params;
+        const { eventId = undefined } = req.body;
 
-        if (eventIdStr == undefined) {
-            res.status(412);
+        if (eventId == undefined || eventId == 0) {
+            res.status(412).json({ error: "Missing event ID" });
             return;
         }
-
-        let eventId = parseInt(eventIdStr);
 
         bookmarkService
-            .addBookmark(user.id, eventId)
+            .addBookmark(user.id, parseInt(eventId))
             .then(() => {
-                res.status(500);
+                res.status(200).json({ success: true });
             })
             .catch((err) => {
                 res.status(418).json({ error: err });
@@ -60,26 +58,29 @@ router.post(
     }
 );
 
-// DELETE /api/bookmarks/remove - Removes a bookmark for a given event from a given user
-router.post(
-    "/remove",
+// DELETE /api/bookmarks/ - Removes a bookmark for a given event from a given user
+router.delete(
+    "/",
     authService.validateToken,
     async (req: Request, res: Response) => {
-        let user = authService.getUser(res);
+        const user = authService.getUser(res);
 
         if (user == undefined) {
-            res.status(401);
+            res.status(401).json({ error: "Unauthorized" });
             return;
         }
 
-        let { eventIdStr } = req.params;
+        const { eventId = undefined } = req.body;
 
-        let eventId = parseInt(eventIdStr ?? "");
+        if (eventId == undefined) {
+            res.status(412).json({ error: "Missing event ID" });
+            return;
+        }
 
         bookmarkService
-            .removeBookmark(user.id, eventId)
+            .removeBookmark(user.id, parseInt(eventId))
             .then(() => {
-                res.status(500);
+                res.status(200).json({ success: true });
             })
             .catch((err) => {
                 res.status(418).json({ error: err });

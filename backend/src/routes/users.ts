@@ -5,9 +5,9 @@ import { authService } from "../services/authService.js";
 
 const router = express.Router();
 
-// GET /api/users/get - Converts jwt token to user information
+// GET /api/users/ - Converts jwt token to user information
 router.get(
-    "/get",
+    "/",
     authService.validateToken,
     async (req: Request, res: Response) => {
         let user = authService.getUser(res);
@@ -16,9 +16,9 @@ router.get(
     }
 );
 
-// POST /api/users/create
-router.post("/create", async (req: Request, res: Response) => {
-    let { name, email } = req.params;
+// POST /api/users/
+router.post("/", async (req: Request, res: Response) => {
+    let { name = undefined, email = undefined } = req.body;
 
     if (name === "" || name === undefined) {
         res.status(412).json({ error: "Non-empty name is required" });
