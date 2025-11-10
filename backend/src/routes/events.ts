@@ -8,12 +8,12 @@ const router = express.Router();
 router.get("/", async (req: Request, res: Response) => {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
 
-    const start_time_range = req.query.start_time_range
-        ? new Date(req.query.start_time_range as string)
+    const min_start_time = req.query.min_start_time
+        ? new Date(req.query.min_start_time as string)
         : new Date("1970-1-1");
 
-    const end_time_range = req.query.end_time_range
-        ? new Date(req.query.end_time_range as string)
+    const max_start_time = req.query.max_start_time
+        ? new Date(req.query.max_start_time as string)
         : new Date("2999-1-1");
 
     const min_cost = req.query.min_cost
@@ -35,11 +35,18 @@ router.get("/", async (req: Request, res: Response) => {
     const radius = req.query.radius ? parseInt(req.query.radius as string) : 10;
 
     eventService
-        .getAllEvents(limit)
+        .getAllEvents(
+            limit,
+            min_start_time.toISOString(),
+            max_start_time.toISOString(),
+            min_cost,
+            max_cost
+        )
         .then((events) => {
             res.status(200).json({ events: events, count: events.length });
         })
         .catch((err: Error) => {
+            console.log("Error getting events: ", err);
             res.status(500).json({ error: err });
         });
 });
