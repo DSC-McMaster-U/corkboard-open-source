@@ -18,7 +18,7 @@ router.get(
         }
 
         bookmarkService
-            .getBookmarks(user.id)
+            .getBookmarks(String(user.id))
             .then((result) => {
                 res.status(200).json({ bookmarks: JSON.stringify(result) });
             })
@@ -42,13 +42,13 @@ router.post(
 
         const { eventId = undefined } = req.body;
 
-        if (eventId == undefined || eventId == 0) {
+        if (eventId == undefined || eventId === "") {
             res.status(412).json({ error: "Missing event ID" });
             return;
         }
 
         bookmarkService
-            .addBookmark(user.id, parseInt(eventId))
+            .addBookmark(String(user.id), eventId as string)
             .then(() => {
                 res.status(200).json({ success: true });
             })
@@ -78,7 +78,7 @@ router.delete(
         }
 
         bookmarkService
-            .removeBookmark(user.id, parseInt(eventId))
+            .removeBookmark(String(user.id), eventId as string)
             .then(() => {
                 res.status(200).json({ success: true });
             })

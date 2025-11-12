@@ -31,10 +31,71 @@ export const db = {
                 .gte("cost", min_cost)
                 .lte("cost", max_cost)
                 .limit(limit),
+        
+        // get events by id
+        getById: (eventId: string) =>
+            supabase
+                .from("events")
+                .select("*")
+                .eq("id", eventId)
+                .single(),
     },
     venues: {
         getAll: (limit = 10) =>
             supabase.from("venues").select("*").limit(limit), // returns all venues
+    },
+    bookmarks: {
+        // get all bookmarks for a user
+        getByUserId: (userId: string) =>
+            supabase // inner join with events and venues (nested relationship)
+                .from("user_bookmarks")
+                .select(`
+                    *,
+                    events (
+                        id,
+                        title,
+                        description,
+                        start_time,
+                        cost,
+                        status,
+                        venues (
+                            id,
+                            name,
+                            address,
+                            venue_type
+                        )
+                    )
+                `)
+                .eq("user_id", userId)
+                .order("created_at", { ascending: false }),
+        
+        // check if bookmark exists
+        exists: (userId: string, eventId: string) =>
+            supabase
+                .from("user_bookmarks")
+                .select("user_id, event_id")
+                .eq("user_id", userId)
+                .eq("event_id", eventId)
+                .maybeSingle(),
+        
+        // add bookmark
+        create: (userId: string, eventId: string) =>
+            supabase
+                .from("user_bookmarks")
+                .insert({
+                    user_id: userId,
+                    event_id: eventId
+                })
+                .select()
+                .single(),
+        
+        // remove bookmark
+        delete: (userId: string, eventId: string) =>
+            supabase
+                .from("user_bookmarks")
+                .delete()
+                .eq("user_id", userId)
+                .eq("event_id", eventId),
     },
     healthCheck: () => supabase.from("venues").select("count").limit(1), // returns the number of venues
 };
