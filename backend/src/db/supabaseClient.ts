@@ -78,6 +78,28 @@ export const db = {
     venues: {
         getAll: (limit = 10) =>
             supabase.from("venues").select("*").limit(limit), // returns all venues
+        
+        // get venue by ID (helper for validation)
+        getById: (venueId: string) =>
+            supabase
+                .from("venues")
+                .select("*")
+                .eq("id", venueId)
+                .single(),
+        
+        // create venue
+        // venue_type enum: "bar", "club", "theater", "venue", "outdoor", "other"
+        // billy's note: `create_at` is auto-generated
+        create: (venueData: {
+            name: string;
+            address?: string;
+            venue_type?: string;
+        }) =>
+            supabase
+                .from("venues")
+                .insert(venueData)
+                .select()
+                .single(),
     },
     bookmarks: {
         // get all bookmarks for a user
