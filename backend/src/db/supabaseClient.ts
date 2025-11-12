@@ -22,15 +22,33 @@ export const db = {
             max_start_time: string,
             min_cost: number,
             max_cost: number
-        ) =>
-            supabase
+        ) => {
+            let query = supabase
                 .from("events")
-                .select("*")
+                .select(`
+                    *,
+                    venues (
+                        id,
+                        name,
+                        address,
+                        venue_type
+                    )
+                `)
                 .gte("start_time", min_start_time)
-                .lte("start_time", max_start_time)
-                .gte("cost", min_cost)
-                .lte("cost", max_cost)
-                .limit(limit),
+                .lte("start_time", max_start_time);
+            
+            // handle NULL costs: only filter by cost if user specified a range
+            const isDefaultCostRange = min_cost === 0 && max_cost === Number.MAX_VALUE;
+            if (!isDefaultCostRange) {
+                // apply cost range filter
+                // billy's note: NULL costs will be excluded when filtering (standard behavior)
+                query = query
+                    .gte("cost", min_cost)
+                    .lte("cost", max_cost);
+            }
+            
+            return query.limit(limit);
+        },
         
         // get events by id
         getById: (eventId: string) =>
@@ -38,6 +56,23 @@ export const db = {
                 .from("events")
                 .select("*")
                 .eq("id", eventId)
+                .single(),
+        
+        // create event
+        create: (eventData: {
+            title: string;
+            description?: string;
+            venue_id: string;
+            start_time: string;
+            cost?: number;
+            status?: string;
+            source_type?: string;
+            source_url?: string;
+        }) =>
+            supabase
+                .from("events")
+                .insert(eventData)
+                .select()
                 .single(),
     },
     venues: {
