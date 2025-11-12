@@ -187,5 +187,28 @@ export const db = {
                 .select()
                 .single(),
     },
+    genres: {
+        // get all genres
+        getAll: () =>
+            supabase
+                .from("genres")
+                .select("*"),
+        
+        // get genre by name (for duplicate check)
+        getByName: (name: string) =>
+            supabase
+                .from("genres")
+                .select("*")
+                .eq("name", name)
+                .maybeSingle(),
+        
+        // create genre
+        create: (name: string) =>
+            supabase
+                .from("genres")
+                .insert({ name })
+                .select()
+                .single(),
+    },
     healthCheck: () => supabase.from("venues").select("count").limit(1), // returns the number of venues
 };
