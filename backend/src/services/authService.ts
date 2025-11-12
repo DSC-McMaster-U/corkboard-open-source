@@ -5,7 +5,16 @@ export const authService = {
     validateToken: async (req: Request, res: Response, next: () => any) => {
         // TODO: Add validation with supabase auth
         if (req.header("Authorization") == "TESTING_BYPASS") {
-            authService.setUser(res, { name: "BYPASS", id: 109410480 });
+            // fetch first user from database for testing
+            const { data: user, error } = await db.users.getFirst();
+            if (error || !user) {
+                authService.setUser(res, undefined);
+            } else {
+                authService.setUser(res, { 
+                    name: user.name || "Test User", 
+                    id: user.id // UUID string
+                });
+            }
         } else {
             authService.setUser(res, undefined);
         }

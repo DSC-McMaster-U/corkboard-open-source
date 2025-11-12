@@ -10,7 +10,7 @@ router.get(
     "/",
     authService.validateToken,
     async (req: Request, res: Response) => {
-        let user = authService.getUser(res);
+        let user = authService.getUser(res); // billy's note: this will get the first user from db ("name"="Test User")
 
         res.status(200).json({ user: user });
     }
@@ -32,11 +32,11 @@ router.post("/", async (req: Request, res: Response) => {
 
     userService
         .createUser(name, email)
-        .then(() => {
-            res.status(200);
+        .then((user) => {
+            res.status(200).json({ success: true, user });
         })
         .catch((err: Error) => {
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: err.message });
         });
 });
 

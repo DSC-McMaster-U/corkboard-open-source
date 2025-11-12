@@ -97,5 +97,38 @@ export const db = {
                 .eq("user_id", userId)
                 .eq("event_id", eventId),
     },
+    users: {
+        // get first "real" user for testing (should be "name"="Test User")
+        getFirst: () =>
+            supabase
+                .from("users")
+                .select("*")
+                .limit(1)
+                .single(),
+        
+        // get user by ID
+        getById: (userId: string) =>
+            supabase
+                .from("users")
+                .select("*")
+                .eq("id", userId)
+                .single(),
+        
+        // get user by email (for duplicate check)
+        getByEmail: (email: string) =>
+            supabase
+                .from("users")
+                .select("*")
+                .eq("email", email)
+                .maybeSingle(),
+        
+        // create user
+        create: (name: string, email: string) =>
+            supabase
+                .from("users")
+                .insert({ name, email })
+                .select()
+                .single(),
+    },
     healthCheck: () => supabase.from("venues").select("count").limit(1), // returns the number of venues
 };
