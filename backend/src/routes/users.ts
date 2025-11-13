@@ -33,7 +33,7 @@ router.post("/", async (req: Request, res: Response) => {
     userService
         .createUser(name, email)
         .then((user) => {
-            res.status(200).json({ success: true, user });
+            res.status(200).json({ success: true, user: user });
         })
         .catch((err: Error) => {
             res.status(500).json({ error: err.message });

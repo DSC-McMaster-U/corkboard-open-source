@@ -20,7 +20,7 @@ router.get(
         bookmarkService
             .getBookmarks(String(user.id))
             .then((result) => {
-                res.status(200).json({ bookmarks: JSON.stringify(result) });
+                res.status(200).json({ bookmarks: result });
             })
             .catch((err) => {
                 res.status(418).json({ error: err });
