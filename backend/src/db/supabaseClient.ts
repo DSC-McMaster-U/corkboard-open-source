@@ -211,4 +211,8 @@ export const db = {
                 .single(),
     },
     healthCheck: () => supabase.from("venues").select("count").limit(1), // returns the number of venues
+    auth: {
+        // validate JWT token with Supabase Auth
+        validateJWT: (token: string) => supabase.auth.getUser(token),
+    },
 };

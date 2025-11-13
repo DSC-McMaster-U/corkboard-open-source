@@ -10,7 +10,13 @@ router.get(
     "/",
     authService.validateToken,
     async (req: Request, res: Response) => {
-        let user = authService.getUser(res); // billy's note: this will get the first user from db ("name"="Test User")
+        const user = authService.getUser(res);
+
+        // handled unauthorized user
+        if (user == undefined) {
+            res.status(401).json({ error: "Unauthorized" });
+            return;
+        }
 
         res.status(200).json({ user: user });
     }
