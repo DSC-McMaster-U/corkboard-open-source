@@ -1,12 +1,15 @@
 import { db } from "../db/supabaseClient.js";
 import type { Request, Response } from "express";
 
+// Deterministic test user for non-hermetic tests
+// TODO: Replace with JWT auth and manual test user token
+const TEST_USER_ID = "c51a653f-0b60-44cf-b160-68c0554dea6c"; // "name"="Test User"
+
 export const authService = {
     validateToken: async (req: Request, res: Response, next: () => any) => {
         // TODO: Add validation with supabase auth
         if (req.header("Authorization") == "TESTING_BYPASS") {
-            // fetch first user from database for testing
-            const { data: user, error } = await db.users.getFirst();
+            const { data: user, error } = await db.users.getById(TEST_USER_ID);
             if (error || !user) {
                 authService.setUser(res, undefined);
             } else {

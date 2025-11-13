@@ -6,18 +6,25 @@ import app from "../app.js";
 let bypassUserToken = "TESTING_BYPASS";
 
 type Event = {
-    id: number;
+    id: string; // UUID
     title: string;
-    venue_id: number;
+    venue_id: string; // UUID
     // TODO Change tests to account for joins with venue table
     //venue_name: string;
     //venue_address: string;
+    description?: string;
     start_time: string;
-    cost: number;
+    cost: number | null; // Can be null
     status: string;
     created_at: string;
-    source_type: string;
-    source_url: string;
+    source_type?: string | null;
+    source_url?: string | null;
+    venues?: {
+        id: string;
+        name: string;
+        address: string | null;
+        venue_type: string | null;
+    };
 };
 
 describe("GET /api/events/", () => {
