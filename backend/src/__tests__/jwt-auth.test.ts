@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll } from "@jest/globals";
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 import app from "../app.js";
+import { db } from "../db/supabaseClient.js";
 
 // Load environment variables
 dotenv.config();
@@ -163,6 +164,76 @@ describe("JWT Authentication", () => {
 
         expect(response.statusCode).toBe(401);
         expect(response.body.error).toBe("Unauthorized");
+    });
+});
+
+describe("Sign-In Business Logic", () => {
+    // test sign-in using db layer methods
+    
+    // 1. test sign-in with valid credentials
+    it("should successfully sign in with valid credentials using db.auth.signIn", async () => {
+        const { data, error } = await db.auth.signIn(TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        
+        expect(error).toBeNull();
+        expect(data).toBeDefined();
+        expect(data?.user).toBeDefined();
+        expect(data?.session).toBeDefined();
+        expect(data?.session?.access_token).toBeDefined();
+        expect(data?.user?.email).toBe(TEST_USER_EMAIL);
+    });
+    
+    // 2. test sign-in with invalid email
+    it("should return error with invalid email", async () => {
+        const { data, error } = await db.auth.signIn("hello@example.com", TEST_USER_PASSWORD);
+        
+        expect(error).toBeDefined();
+        expect(data.session).toBeNull();
+        expect(error?.message).toBeDefined();
+    });
+    
+    // 3. test sign-in with wrong password
+    it("should return error with wrong password", async () => {
+        const { data, error } = await db.auth.signIn(TEST_USER_EMAIL, "this");
+        
+        expect(error).toBeDefined();
+        expect(data.session).toBeNull();
+        expect(error?.message).toBeDefined();
+    });
+    
+    // 4. test sign-in with empty email
+    it("should return error with empty email", async () => {
+        const { data, error } = await db.auth.signIn("", TEST_USER_PASSWORD);
+        
+        expect(error).toBeDefined();
+        expect(data.session).toBeNull();
+    });
+    
+    // 5. test sign-in with empty password
+    it("should return error with empty password", async () => {
+        const { data, error } = await db.auth.signIn(TEST_USER_EMAIL, "");
+        
+        expect(error).toBeDefined();
+        expect(data.session).toBeNull();
+    });
+    
+    // 6. test sign-in with valid credentials and works with API
+    it("should return valid token that works with API after sign-in", async () => {
+
+        const { data, error } = await db.auth.signIn(TEST_USER_EMAIL, TEST_USER_PASSWORD);
+        
+        expect(error).toBeNull();
+        expect(data.session).toBeDefined();
+        
+        const token = data.session!.access_token;
+        
+        // GET /api/users/ should return 200 with valid token
+        const response = await request(app)
+            .get("/api/users/")
+            .set("Authorization", `Bearer ${token}`);
+        
+        expect(response.statusCode).toBe(200);
+        expect(response.body.user).toBeDefined();
+        expect(response.body.user.id).toBeDefined();
     });
 });
 

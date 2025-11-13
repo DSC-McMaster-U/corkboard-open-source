@@ -214,5 +214,16 @@ export const db = {
     auth: {
         // validate JWT token with Supabase Auth
         validateJWT: (token: string) => supabase.auth.getUser(token),
+        
+        // sign up new user in Supabase Auth
+        signUp: (email: string, password: string) =>
+            supabase.auth.signUp({ email, password }),
+        
+        // sign in user and get JWT token
+        signIn: (email: string, password: string) =>
+            supabase.auth.signInWithPassword({ email, password }),
+        
+        // sign out user (optional, for future use)
+        signOut: () => supabase.auth.signOut(),
     },
 };
