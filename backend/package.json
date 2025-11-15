@@ -1,0 +1,41 @@
+{
+    "name": "corkboard-backend",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/app.js",
+    "scripts": {
+        "start": "node dist/app.js",
+        "build": "tsc",
+        "dev": "tsc && node dist/app.js",
+        "dev:watch": "tsc --watch",
+        "test": "jest --coverage"
+    },
+    "keywords": [
+        "corkboard",
+        "music",
+        "events",
+        "api"
+    ],
+    "author": "Corkboard Team",
+    "license": "MIT",
+    "description": "Backend API for Corkboard music event discovery app",
+    "devDependencies": {
+        "@babel/core": "^7.28.5",
+        "@babel/preset-env": "^7.28.5",
+        "@babel/preset-typescript": "^7.28.5",
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.4",
+        "@types/node": "^24.10.0",
+        "@types/supertest": "^6.0.3",
+        "babel-jest": "^30.2.0",
+        "jest": "^30.2.0",
+        "supertest": "^7.1.4",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.39.0",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^5.1.0"
+    }
+}
