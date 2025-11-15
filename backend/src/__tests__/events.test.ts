@@ -1,6 +1,8 @@
 import request from "supertest";
 import { describe, it, expect } from "@jest/globals";
 import app from "../app.js";
+import { db } from "../db/supabaseClient.js";
+import { strictMatchFields } from "../utils/cmp.js";
 
 // TODO: Replace the bypass token with an actual token for a test user
 let bypassUserToken = "TESTING_BYPASS";
@@ -123,5 +125,135 @@ describe("GET /api/events/", () => {
         console.warn(
             "This test is not implemented, will be implemented in MVP 2"
         );
+    });
+});
+
+describe("POST /api/events/", () => {
+    let path = "/api/events";
+
+    it("should return code 401 if no authorization is passed", async () => {
+        const response = await request(app).post(path);
+
+        expect(response.statusCode).toBe(401);
+        expect(response.body.error).toBe("Unauthorized");
+    });
+
+    it("should return 400 if no title is passed", async () => {
+        const response = await request(app)
+            .post(path)
+            .set("Authorization", bypassUserToken)
+            .send({
+                venue_id: "123e4567-e89b-12d3-a456-426614174000",
+                start_time: new Date().toISOString(),
+            });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe("Title is missing");
+    });
+
+    it("should return 400 if no venue_id is passed", async () => {
+        const response = await request(app)
+            .post(path)
+            .set("Authorization", bypassUserToken)
+            .send({
+                title: "Test Event",
+                start_time: new Date().toISOString(),
+            });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe("Venue ID is missing");
+    });
+
+    it("should return 400 if no start_time is passed", async () => {
+        const response = await request(app)
+            .post(path)
+            .set("Authorization", bypassUserToken)
+            .send({
+                title: "Test Event",
+                venue_id: "123e4567-e89b-12d3-a456-426614174000",
+            });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe("Start time is missing");
+    });
+
+    it("should return 400 if an invalid start_time is passed", async () => {
+        const response = await request(app)
+            .post(path)
+            .set("Authorization", bypassUserToken)
+            .send({
+                title: "Test Event",
+                venue_id: "123e4567-e89b-12d3-a456-426614174000",
+                start_time: "ieaofjoeivnwoi",
+            });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe("Invalid start time");
+    });
+
+    it("should return 500 and for an invalid venue_id", async () => {
+        const response = await request(app)
+            .post(path)
+            .set("Authorization", bypassUserToken)
+            .send({
+                title: "Test Event",
+                venue_id: "not-a-real-id",
+                start_time: new Date().toISOString(),
+                description: "Test Description",
+                cost: 10,
+                status: "active",
+            });
+
+        expect(response.statusCode).toBe(500);
+        expect(response.body.success).toBe(false);
+    });
+
+    it("should return 200 and insert into the database if all arguments are passed with a valid venue_id", async () => {
+        let eventId: string | undefined = undefined;
+        let error: string | undefined = undefined;
+
+        try {
+            const eventBody = {
+                title: "Test Event",
+                venue_id: "1154dd33-674e-4494-afac-594968579624",
+                start_time: new Date().toISOString(),
+                description: "Test Description",
+                cost: 10,
+                status: "published",
+            };
+
+            const response = await request(app)
+                .post(path)
+                .set("Authorization", bypassUserToken)
+                .send(eventBody);
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.success).toBe(true);
+
+            eventId = response.body.id;
+
+            let inserted = await db.events.getById(eventId!);
+
+            expect(
+                strictMatchFields(eventBody, inserted.data, [
+                    "title",
+                    "venue_id",
+                    "start_time",
+                    "description",
+                    "cost",
+                    " status",
+                ])
+            );
+        } catch (err: any) {
+            error = err as string;
+        } finally {
+            if (eventId != undefined) {
+                db.events.deleteById(eventId);
+            }
+
+            if (error != undefined) {
+                throw error;
+            }
+        }
     });
 });
