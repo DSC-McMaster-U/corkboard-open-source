@@ -1,0 +1,44 @@
+/* November 16th, 2025
+ * This scarper utility is not complete, and is meant to be more proof of concept to be expanded later
+ * As of now, it only support scrapigng text from the corktwon pub's list of events.
+ * 
+ * to run this file directly, use `ts-node src/utils/scraper.ts` (from the backend directory)
+ */
+
+import axios from "axios";
+import * as cheerio from "cheerio";
+
+export async function scrapeWebsite(url: string) {
+  try {
+    //get the html
+    const { data: html } = await axios.get(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0"
+      }
+    });
+
+    //load into Cheerio
+    const cheerioObj = cheerio.load(html);
+
+    //typescript moment
+    const results: { time: string; band: string }[] = [];
+
+    cheerioObj("h4").each((_, el) => {
+        // h4 element is the time, and then go up a div, go to the next and the strong is the event + stage
+      const outerDiv = cheerioObj(el).parent().parent();
+      const time = cheerioObj(el).text().trim();
+      const band = outerDiv.next("div").find("strong").first().text().trim();
+
+      results.push({ time, band });
+    });
+
+    return results;
+
+  } catch (err) {
+    console.error("Scraping failed:", err);
+    return [];
+  }
+}
+
+const data = await scrapeWebsite("https://corktownpub.ca/on-the-stage/");
+console.log(data);
