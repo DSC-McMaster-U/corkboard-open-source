@@ -6,5 +6,19 @@ export const venueService = {
         if (error) throw error;
         return data || [];
     },
+    createVenue: async (
+        name: string,
+        venue_type?: string,
+        address?: string
+    ) => {
+        const { data, error } = await db.venues.create({
+            name: name,
+            venue_type: venue_type,
+            address: address,
+        });
+
+        if (error) throw error;
+        return data ?? [];
+    },
     // Add more venue service methods here
 };
