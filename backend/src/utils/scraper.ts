@@ -21,15 +21,16 @@ export async function scrapeWebsite(url: string) {
     const cheerioObj = cheerio.load(html);
 
     //typescript moment
-    const results: { time: string; band: string }[] = [];
+    const results: { date: string; stage: string, band: string }[] = [];
 
     cheerioObj("h4").each((_, el) => {
-        // h4 element is the time, and then go up a div, go to the next and the strong is the event + stage
+        // h4 element is the time, and then go up a div, go to the next and the strong is the stage and time
       const outerDiv = cheerioObj(el).parent().parent();
-      const time = cheerioObj(el).text().trim();
-      const band = outerDiv.next("div").find("strong").first().text().trim();
+      const date = cheerioObj(el).text().trim();
+      const stage = outerDiv.next("div").find("strong").first().text().trim();
+      const band = outerDiv.next("div").first().text().trim();
 
-      results.push({ time, band });
+      results.push({ date, stage, band });
     });
 
     return results;
