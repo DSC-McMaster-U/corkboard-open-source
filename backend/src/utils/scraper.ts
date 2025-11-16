@@ -28,7 +28,11 @@ export async function scrapeWebsite(url: string) {
       const outerDiv = cheerioObj(el).parent().parent();
       const date = cheerioObj(el).text().trim();
       const stage = outerDiv.next("div").find("strong").first().text().trim();
-      const band = outerDiv.next("div").first().text().trim();
+
+      // it is important to use the character U+2013 "–" in the regex, and not the regular hyphen "-"
+      var tempBand = outerDiv.next("div").first().text().trim();
+      var regex = new RegExp(`^${stage} – `);
+      const band = tempBand.replace(regex, "").trim()
 
       results.push({ date, stage, band });
     });
