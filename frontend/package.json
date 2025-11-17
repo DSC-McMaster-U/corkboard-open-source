@@ -40,7 +40,6 @@
     "react-native-gesture-handler": "~2.28.0",
     "react-native-modal-datetime-picker": "^18.0.0",
     "react-native-maps": "1.20.1",
-    "react-native-modal-datetime-picker": "^18.0.0",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",

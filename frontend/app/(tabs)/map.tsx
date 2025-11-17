@@ -1,28 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect, use } from "react";
 import { View, Text, StatusBar } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomPanel from '@/components/bottom-panel/bottom-panel'; 
 import EventModal from '@/components/event-modal'; 
-
+import { apiFetch } from "@/api/api";
+import { EventData, EventList } from "@/constants/types";
+import { formatEventDateTime } from "@/scripts/helpers";
 // import { } from 'expo-router';
 
 const HAMILTON = { latitude: 43.2557, longitude: -79.8711, latitudeDelta: 0.08, longitudeDelta: 0.08 };
 
-type EventData = {
-  show_name: string;
-  artist: string;
-  date: string;
-  time: string;
-  location: string;
-  genre: string;
-  image: string;
-  description: string;
-  lat: number;
-  lng: number;
-};
-
-const venues: EventData[] = [
+const venues = [
   {
     show_name: "The Art of Loving",
     artist: "Olivia Dean",
@@ -53,6 +42,52 @@ export default function MapScreen() {
   const [range, setRange] = useState<[number, number]>([10, 70]);
   const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [events, setEvents] = useState<EventData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const eventLimit = 4;
+
+  // this will fetch venues from the backend when the page is loaded or range changes
+  useEffect(() => {
+    const controller = new AbortController();
+    let isMounted = true;
+
+    const fetchEvents = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await apiFetch<EventList>(`/events?limit=${eventLimit}&min_cost=${range[0]}&max_cost=${range[1]}`,
+          { signal: controller.signal}
+        );
+        if (isMounted) {
+          //console.log("Events received:", res.events);
+          setEvents(res.events || []);
+        }
+      } catch (err: any) {
+        if (isMounted && err.name !== "AbortError") {
+          setError(err.message || "Failed to fetch events");
+          console.error("Error fetching events:", err);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    // Debounce: wait 300ms after range changes before fetching
+    const timer = setTimeout(fetchEvents, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+      isMounted = false;
+    };
+  }, [range]);
+
+  // Helper function to generate random coordinates around Hamilton
+  const getRandomCoordinate = (base: number, offset: number) => base + Math.random() * offset;
 
   return (
     <SafeAreaView className='bg-[#AE6E4E] flex-1' edges={[ 'top', 'left', 'right' ]}>
@@ -69,22 +104,25 @@ export default function MapScreen() {
       <View className="flex-1">
         {/* Map */}
         <MapView style={{ flex: 1 }} provider={PROVIDER_GOOGLE} initialRegion={HAMILTON}>
-          {venues.map((v, idx) => (
+          {events.map((e, idx) => (
             <Marker
-            key={v.show_name}
-            coordinate={{ latitude: v.lat, longitude: v.lng }}
-            title={v.show_name}
-            description={`${v.date} • ${v.time}`}
+            key={e.id}
+            coordinate={{
+              latitude: getRandomCoordinate(43.25, 0.01),
+              longitude: getRandomCoordinate(-79.88, 0.01),
+            }}
+            title={e.title}
+            description={`${formatEventDateTime(e.start_time)} • ${e.description}`}
           >
             <Callout
               onPress={() => {
-                setSelectedEvent(v);
+                setSelectedEvent(e);
                 setModalVisible(true);
               }}
             >
               <View style={{ width: 130 }}>
-                <Text style={{ fontWeight: "600" }}>{v.show_name}</Text>
-                <Text>{v.artist}</Text>
+                <Text style={{ fontWeight: "600" }}>{e.title}</Text>
+                <Text>{/*e.artist*/ "placeholder"}</Text>
                 <Text style={{ marginTop: 6, textDecorationLine: "underline" }}>More details</Text>
               </View>
             </Callout>
