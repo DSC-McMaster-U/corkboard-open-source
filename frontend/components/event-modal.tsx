@@ -1,7 +1,7 @@
 import { Modal, View, Text, TouchableOpacity, Linking, Image } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { EventData } from "@/constants/types";
-import { formatEventDateTime } from "@/scripts/helpers";
+import { formatEventDateTime, formatEventDateTimeToDate, formatEventDateTimeToTime } from "@/scripts/helpers";
 
 type EventModalProps = {
   visible: boolean;
@@ -10,6 +10,7 @@ type EventModalProps = {
 };
 
 export default function EventModal({ visible, onClose, data }: EventModalProps) {
+  //console.log("EventModal data:", data);
   if (!data) return null;
 
   return (
@@ -46,7 +47,7 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
         <View style={{position: 'absolute', top: 78, left: 15, flexDirection: 'row', alignItems: 'center'}}>
           <FontAwesome name="calendar" size={14} color="white" />
           <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>
-            {formatEventDateTime(data.start_time)}
+            {formatEventDateTimeToDate(data.start_time)}
           </Text>
         </View>
 
@@ -54,7 +55,7 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
         <View style={{ position: 'absolute', top: 98, left: 15, flexDirection: 'row', alignItems: 'center'}}>
           <FontAwesome name="clock-o" size={14} color="white" />
           <Text style={{fontSize: 14, color: 'white', marginLeft: 6}}>
-            {formatEventDateTime(data.start_time)}
+            {formatEventDateTimeToTime(data.start_time)}
           </Text>
         </View>
 
@@ -76,7 +77,7 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
         </View>
 
         <Image
-          source={{ uri: data.source_url || ""}} 
+          source={{ uri: "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b"}} // temp placeholder
           style={{width: 124, height: 120, borderRadius: 3, position: 'absolute', top: 14, right: 14 }}
         />
 

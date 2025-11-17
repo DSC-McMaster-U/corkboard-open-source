@@ -61,6 +61,7 @@ export default function MapScreen() {
           { signal: controller.signal}
         );
         if (isMounted) {
+          //console.log("Events received:", res.events);
           setEvents(res.events || []);
         }
       } catch (err: any) {
