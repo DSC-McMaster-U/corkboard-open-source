@@ -1,9 +1,17 @@
 import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { FontAwesome } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EventModal from '@/components/event-modal';
 import BottomPanel from '@/components/bottom-panel/bottom-panel'; 
 
+type Event = {
+  id: string;
+  title: string;
+  description: string;
+  start_time: string;
+  cost: number;
+  venue_id: string;
+};
 
 type InfoBoxType = {show_name: string, artist: string, date: string, time: string, location: string, genre: string, image: string;};
 
@@ -73,7 +81,35 @@ export default function EventsScreen() {
   const [range, setRange] = useState<[number, number]>([10, 70]);  // set up state for ticket price slider bar
   const [selectedEvent, setSelectedEvent] = useState<any>(null); // store event object that user clicks
   const [modalVisible, setModalVisible] = useState(false); // modal state to open/close event popup
+  const [eventList, setEventList] = useState<Event[]>([]); // store events from backend
+  const [loading, setLoading] = useState(true);  // tracks if data is still being fetched
+  const [error, setError] = useState<string | null>(null); // track errors during data fetching
 
+  useEffect(() => {
+    // async function to fetch event data from backend
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch("http://192.168.0.19:3000/api/events"); // send GET request to backend
+        if (!response.ok) throw new Error(`Error ${response.status}`);
+        console.log("Response received:", response.status);
+        const data: Event[] = await response.json(); 
+        console.log("Data:", data);
+        setEventList(data); // store the data in state
+      } 
+      catch (err: any) {
+        setError(err.message); // if there is an error, store in error
+        console.error("Fetch error:", err);
+      } 
+      finally {
+        setLoading(false); // if data fetching is successful set loading to false 
+      }
+    };
+  fetchEvents();
+}, []);
+
+
+
+  /*
   const eventList = [
     {show_name: "The Art of Loving", artist: "Olivia Dean", date: "Dec 3", time: "8:00pm", location: "FirstOntario Hall", genre: "Pop", image: "https://hips.hearstapps.com/hmg-prod/images/lead-press-2-68e815b83e780.jpg?crop=1.00xw:0.653xh;0,0.0410xh&resize=1120:*", description: "This is a description."},
     {show_name: "No Hard Feelings", artist: "The Beaches", date: "Dec 6", time: "8:00pm", location: "TD Coliseum", genre: "Rock", image: "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b", description: "This is a description."},
@@ -81,27 +117,40 @@ export default function EventsScreen() {
     {show_name: "Unreal Earth Tour", artist: "Hozier", date: "Dec 13", time: "6:00pm", location: "FirstOntario Hall", genre: "Rock", image: "https://s1.ticketm.net/dam/a/9fe/d6cc61a9-9850-4e4b-9a7e-893c63c629fe_RETINA_PORTRAIT_3_2.jpg", description: "This is a description."},
     {show_name: "World Tour", artist: "Jonas Brothers", date: "Dec 14", time: "7:00pm", location: "TD Coliseum", genre: "Pop", image: "https://s1.ticketm.net/dam/a/257/0f1a51cd-670d-41ca-bb6f-775ea30f6257_RETINA_PORTRAIT_3_2.jpg", description: "This is a description."}
   ]
+    */
 
   return (
     <View className="flex-1 flex-col justify-start items-center bg-[#FFF0E2]">
       <ScrollView contentContainerStyle={{paddingTop: 120, paddingBottom: 150, alignItems: 'center'}}>
-        {eventList.map((event, index) => (
+        
+        {eventList.map((event) => {
+
+        const dateObj = new Date(event.start_time);
+
+        return (
           <InfoBox
-            key={index}
-            {...event}
+            key={event.id}
+            show_name={event.title}
+            artist={"Unknown"} // replace with artist later
+            date={dateObj.toLocaleDateString()} 
+            time={dateObj.toLocaleTimeString()}  
+            location={event.venue_id || "Unknown"}
+            genre={"Unknown"} // update later
+            image={"https://media.pitchfork.com/photos/5a9f0c13b848c0268b2016bb/1:1/w_450%2Cc_limit/The%2520Neighbourhood.jpg"}
             onPress={() => {
               setSelectedEvent(event);
               setModalVisible(true);
             }}
           />
-      ))}
+        );
+      })}
       </ScrollView>
       
       <EventModal
-  visible={modalVisible}
-  onClose={() => setModalVisible(false)}
-  data={selectedEvent}
-/>
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        data={selectedEvent}
+      />
     
      {/* Bottom panel */}
       <BottomPanel range={range} setRange={setRange}/>
