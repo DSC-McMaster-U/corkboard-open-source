@@ -33,6 +33,13 @@ export const db = {
                         name,
                         address,
                         venue_type
+                    ),
+                    event_genres (
+                        genre_id,
+                        genres (
+                            id,
+                            name
+                        )
                     )
                 `
                 )
@@ -53,7 +60,22 @@ export const db = {
 
         // get events by id
         getById: (eventId: string) =>
-            supabase.from("events").select("*").eq("id", eventId).single(),
+            supabase.from("events").select(`
+                *,
+                venues (
+                    id,
+                    name,
+                    address,
+                    venue_type
+                ),
+                event_genres (
+                    genre_id,
+                    genres (
+                        id,
+                        name
+                    )
+                )
+            `).eq("id", eventId).single(),
 
         // create event
         create: (eventData: {

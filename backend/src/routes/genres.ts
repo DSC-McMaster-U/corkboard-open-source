@@ -25,9 +25,9 @@ router.get("/", async (req: Request, res: Response) => {
         }
         
         const genre = await genresService.getByName(name); 
-        res.json({ genre });
+        return res.json({ genre });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
 

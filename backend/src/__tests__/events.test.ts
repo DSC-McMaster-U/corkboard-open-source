@@ -11,9 +11,6 @@ type Event = {
     id: string; // UUID
     title: string;
     venue_id: string; // UUID
-    // TODO Change tests to account for joins with venue table
-    //venue_name: string;
-    //venue_address: string;
     description?: string;
     start_time: string;
     cost: number | null; // Can be null
@@ -27,6 +24,13 @@ type Event = {
         address: string | null;
         venue_type: string | null;
     };
+    event_genres?: Array<{
+        genre_id: string;
+        genres: {
+            id: string;
+            name: string;
+        };
+    }>;
 };
 
 describe("GET /api/events/", () => {
@@ -126,6 +130,26 @@ describe("GET /api/events/", () => {
             "This test is not implemented, will be implemented in MVP 2"
         );
     });
+
+    it("should return events with venue and genre data joined", async () => {
+        let response = await request(app).get(path + "?limit=5");
+
+        let events: Array<Event> = response.body.events;
+
+        expect(events.length).toBeGreaterThan(0);
+
+        // Check that venue join is present
+        const firstEvent = events[0];
+        if (firstEvent) {
+            expect(firstEvent.venues).toBeDefined();
+            expect(firstEvent.venues?.id).toBeDefined();
+            expect(firstEvent.venues?.name).toBeDefined();
+
+            // Check that genre join structure is present
+            expect(firstEvent.event_genres).toBeDefined();
+            expect(Array.isArray(firstEvent.event_genres)).toBe(true);
+        }
+    });
 });
 
 describe("POST /api/events/", () => {
@@ -213,10 +237,14 @@ describe("POST /api/events/", () => {
         let error: string | undefined = undefined;
 
         try {
+            // use a future date to satisfy the events_start_time_future constraint
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 1); // tomorrow
+
             const eventBody = {
                 title: "Test Event",
                 venue_id: "1154dd33-674e-4494-afac-594968579624",
-                start_time: new Date().toISOString(),
+                start_time: futureDate.toISOString(),
                 description: "Test Description",
                 cost: 10,
                 status: "published",
@@ -241,7 +269,7 @@ describe("POST /api/events/", () => {
                     "start_time",
                     "description",
                     "cost",
-                    " status",
+                    "status",
                 ])
             );
         } catch (err: any) {
