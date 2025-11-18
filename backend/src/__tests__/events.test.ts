@@ -248,7 +248,7 @@ describe("POST /api/events/", () => {
             error = err as string;
         } finally {
             if (eventId != undefined) {
-                db.events.deleteById(eventId);
+                await db.events.deleteById(eventId);
             }
 
             if (error != undefined) {
