@@ -2,7 +2,7 @@
  * This scarper utility is not complete, and is meant to be more proof of concept to be expanded later
  * As of now, it only support scrapigng text from the corktwon pub's list of events.
  * 
- * to run this file directly, use `ts-node src/utils/scraper.ts` (from the backend directory)
+ * to run this file directly, use `node --loader ts-node/esm src/utils/scraper.ts` (from the backend directory)
  */
 
 import axios from "axios";
