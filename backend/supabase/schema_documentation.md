@@ -62,6 +62,52 @@
 
 **See also:** `backend/SOURCE_TRACKING.md` for detailed usage guide
 
+## Events Table - Additional Fields
+
+### `artist` (varchar(255), nullable)
+**Purpose:** Name of the artist or performer for the event.
+
+**Examples:**
+- `"The Local Band"`
+- `"Jazz Quartet"`
+- `NULL` (for events without a specific artist)
+
+### `image` (varchar(255), nullable)
+**Purpose:** Stores local file path to event image.
+
+**Format:** Relative path from `backend/public/` directory (e.g. `"images/events/event-123.jpg"`)
+
+**Access:** Frontend accesses via `http://localhost:3000/images/events/event-123.jpg` (once static file serving is configured)
+
+**Examples:**
+- `"images/events/the-casbah.jpg"`
+- `"images/events/jazz-night.png"`
+- `NULL` (for events without images)
+
+**Note:** Images are stored locally in the backend's public directory. Static file serving will be configured in the API branch.
+
+## Venues Table - Location Fields
+
+### `latitude` (decimal(10, 8), nullable)
+**Purpose:** Geographic latitude coordinate for venue location.
+
+**Precision:** 8 decimal places (accurate to ~1.1mm at equator)
+
+**Range:** -90.0 to 90.0 (10 digits total: 2 before decimal, 8 after)
+
+**Example:** `43.2557` (Hamilton, ON)
+
+### `longitude` (decimal(11, 8), nullable)
+**Purpose:** Geographic longitude coordinate for venue location.
+
+**Precision:** 8 decimal places (accurate to ~1.1mm at equator)
+
+**Range:** -180.0 to 180.0 (11 digits total: 3 before decimal, 8 after)
+
+**Example:** `-79.8711` (Hamilton, ON)
+
+**Note:** Both fields are nullable to allow venues without coordinates (can be populated later via geocoding).
+
 ## Constraints
 
 ### `events_start_time_future`
@@ -118,6 +164,11 @@ All schema changes are tracked in `supabase/migrations/`:
 
 - `001_initial_schema.sql` - Initial tables and sample data
 - `002_add_enums_constraints_source_tracking.sql` - Enums, constraints, source tracking
+- `003_add_sample_users_bookmarks.sql` - Sample user and bookmark data
+- `004_upate_time_stamp.sql` - Change `start_time` from `TIMESTAMP` to `TIMESTAMPTZ`
+- `005_add_artist_column_and_event_genres.sql` - Add `artist` column to events, populate event_genres
+- `006_add_image_and_coordinates.sql` - Add `image` column to events, add `latitude`/`longitude` to venues
+- `007_fix_longitude_precision_and_add_venue_coordinates.sql` - Fix longitude precision to DECIMAL(11, 8), add sample venue coordinates
 
 **To apply a migration:**
 1. Review migration file
