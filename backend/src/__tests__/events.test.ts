@@ -19,11 +19,14 @@ type Event = {
     source_type: string | undefined;
     source_url: string | undefined;
     artist: string | undefined;
+    image: string | undefined;
     venues: {
         id: string;
         name: string;
         address: string | undefined;
         venue_type: string | undefined;
+        longitude: number | undefined;
+        latitude: number | undefined;
     };
     event_genres:
         | Array<{
@@ -187,6 +190,7 @@ describe("GET /api/events/", () => {
             expect(event.source_type).toBe("manual");
             expect(event.source_url).toBeNull();
             expect(event.artist).toBe("Hamilton's Finest");
+            expect(event.image).toBe("images/events/club-absinthe.jpg");
 
             // Venue Verification
             expect(event.venues.id).toBe(
