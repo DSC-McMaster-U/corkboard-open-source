@@ -25,8 +25,6 @@ type Event = {
         name: string;
         address: string | undefined;
         venue_type: string | undefined;
-        longitude: number | undefined;
-        latitude: number | undefined;
     };
     event_genres:
         | Array<{
