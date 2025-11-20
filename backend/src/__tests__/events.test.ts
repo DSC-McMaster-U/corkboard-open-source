@@ -190,7 +190,7 @@ describe("GET /api/events/", () => {
             expect(event.source_type).toBe("manual");
             expect(event.source_url).toBeNull();
             expect(event.artist).toBe("Hamilton's Finest");
-            expect(event.image).toBe("images/events/club-absinthe.jpg");
+            expect(event.image).toBe("images/events/the-underground-maybe.jpg");
 
             // Venue Verification
             expect(event.venues.id).toBe(
@@ -199,6 +199,8 @@ describe("GET /api/events/", () => {
             expect(event.venues.name).toBe("The Underground");
             expect(event.venues.address).toBe("123 James St N, Hamilton, ON");
             expect(event.venues.venue_type).toBe("bar");
+            expect(event.venues.latitude).toBe(43.2577778);
+            expect(event.venues.longitude).toBe(-79.8744444);
 
             // Genre Verification
             let sortedGenres = [...event.event_genres!].sort();
