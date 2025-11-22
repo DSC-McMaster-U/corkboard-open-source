@@ -9,34 +9,7 @@ import { EventData, EventList } from "@/constants/types";
 import { formatEventDateTime } from "@/scripts/helpers";
 // import { } from 'expo-router';
 
-const HAMILTON = { latitude: 43.2557, longitude: -79.8711, latitudeDelta: 0.08, longitudeDelta: 0.08 };
-
-const venues = [
-  {
-    show_name: "The Art of Loving",
-    artist: "Olivia Dean",
-    date: "Dec 3",
-    time: "8:00pm",
-    location: "FirstOntario Hall",
-    genre: "Pop",
-    image: "https://hips.hearstapps.com/hmg-prod/images/lead-press-2-68e815b83e780.jpg?crop=1.00xw:0.653xh;0,0.0410xh&resize=1120:*",
-    description: "This is a description.",
-    lat: 43.2564,
-    lng: -79.8717,
-  },
-  {
-    show_name: "No Hard Feelings",
-    artist: "The Beaches",
-    date: "Dec 6",
-    time: "8:00pm",
-    location: "TD Coliseum",
-    genre: "Rock",
-    image: "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b",
-    description: "This is a description.",
-    lat: 43.2590,
-    lng: -79.8723,
-  },
-];
+const HAMILTON = { latitude: 43.2557, longitude: -79.8711, latitudeDelta: 0.04, longitudeDelta: 0.04 };
 
 export default function MapScreen() {
   const [range, setRange] = useState<[number, number]>([10, 70]);
@@ -107,9 +80,13 @@ export default function MapScreen() {
           {events.map((e, idx) => (
             <Marker
             key={e.id}
-            coordinate={{
-              latitude: getRandomCoordinate(43.25, 0.01),
-              longitude: getRandomCoordinate(-79.88, 0.01),
+            coordinate={{ // temp using random coordinates near Hamilton center, latitude and longitude should be NOT NULL in future
+              latitude: typeof e.venues?.latitude === 'number'
+                ? e.venues.latitude
+                : getRandomCoordinate(43.25, 0.01),
+              longitude: typeof e.venues?.longitude === 'number'
+                ? e.venues.longitude
+                : getRandomCoordinate(-79.88, 0.01),
             }}
             title={e.title}
             description={`${formatEventDateTime(e.start_time)} • ${e.description}`}
@@ -122,7 +99,7 @@ export default function MapScreen() {
             >
               <View style={{ width: 130 }}>
                 <Text style={{ fontWeight: "600" }}>{e.title}</Text>
-                <Text>{/*e.artist*/ "placeholder"}</Text>
+                <Text>{e.artist ? e.artist : "Unspecified artist."}</Text>
                 <Text style={{ marginTop: 6, textDecorationLine: "underline" }}>More details</Text>
               </View>
             </Callout>

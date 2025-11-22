@@ -40,7 +40,7 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
 
         {/* Artist */}
         <Text style={{ position: 'absolute', top: 27, left: 15, fontSize: 18, color: 'white'}}>
-          {"placeholder artist"}
+          {data.artist ? data.artist : "Unspecified artist"}
         </Text>
 
         {/* Date */}
@@ -63,7 +63,7 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
         <View style={{ position: 'absolute', top: 60, left: 15, flexDirection: 'row', alignItems: 'center' }}>
           <FontAwesome name="map-marker" size={14} color="white" />
           <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>
-            {data.venue_id}
+            {data.venues.name ? data.venues.name : "Unspecified venue"}
           </Text>
         </View>
 
@@ -72,7 +72,10 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
           style={{ position: 'absolute', top: 115, left: 15, flexDirection: 'row', alignItems: 'center'}}>
           <FontAwesome name="music" size={14} color="white" />
           <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>
-            {"placeholder genre"}
+            {data.event_genres && data.event_genres.length > 0
+              ? data.event_genres.map((eg) => eg.genres.name).join(", ")
+              : "Unspecified genre."
+            }
           </Text>
         </View>
 
@@ -94,7 +97,11 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
             padding: 20,
             elevation: 5,
           }}>
-            <Text>{data.description}</Text>
+            <Text>{`
+            Address: ${data.venues.address ? data.venues.address : "Unspecified address."}
+            Venue Type: ${data.venues.venue_type ? data.venues.venue_type : "Unspecified type."}
+            ${data.description}
+            `}</Text>
         </View>
 
         {/* Open external link button - for tickets */}
