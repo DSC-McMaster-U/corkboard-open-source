@@ -80,7 +80,7 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
           <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>
             {data.event_genres && data.event_genres.length > 0
               ? data.event_genres.map((eg) => eg.genres.name).join(", ")
-              : "Unspecified genre."
+              : "Unspecified"
             }
           </Text>
         </View>
@@ -103,11 +103,10 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
             padding: 20,
             elevation: 5,
           }}>
-            <Text>{`
-            Address: ${data.venues.address ? data.venues.address : "Unspecified address."}
-            Venue Type: ${data.venues.venue_type ? data.venues.venue_type : "Unspecified type."}
-            ${data.description}
-            `}</Text>
+            <Text>{`Address: ${data.venues.address ? data.venues.address : "Unspecified address."}`}</Text>
+            <Text>{`Venue Type: ${data.venues.venue_type ? data.venues.venue_type : "Unspecified type."}`}</Text>
+            <Text>{`Ticket Price: ${data.cost !== undefined ? `$${data.cost.toFixed(2)}` : "Unspecified cost."}`}</Text>
+            <Text style={{ marginTop: 10 }}>{data.description ? data.description : "No description available."}</Text>
         </View>
 
         {/* Open external link button - for tickets */}
