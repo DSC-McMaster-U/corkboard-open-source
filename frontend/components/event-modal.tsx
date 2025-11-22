@@ -2,6 +2,7 @@ import { Modal, View, Text, TouchableOpacity, Linking, Image } from "react-nativ
 import { FontAwesome } from "@expo/vector-icons";
 import { EventData } from "@/constants/types";
 import { formatEventDateTime, formatEventDateTimeToDate, formatEventDateTimeToTime } from "@/scripts/helpers";
+import { getImageUrl } from "@/api/api";
 
 type EventModalProps = {
   visible: boolean;
@@ -9,9 +10,14 @@ type EventModalProps = {
   data: EventData | null;
 };
 
+const PLACEHOLDER_IMAGE =
+  "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b";
+
 export default function EventModal({ visible, onClose, data }: EventModalProps) {
   //console.log("EventModal data:", data);
   if (!data) return null;
+
+  const imageUri = data.image ? getImageUrl(data.image) : PLACEHOLDER_IMAGE;
 
   return (
     <Modal visible={visible} transparent animationType="slide">
@@ -80,7 +86,7 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
         </View>
 
         <Image
-          source={{ uri: "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b"}} // temp placeholder
+          source={{ uri: imageUri }} // temp placeholder
           style={{width: 124, height: 120, borderRadius: 3, position: 'absolute', top: 14, right: 14 }}
         />
 

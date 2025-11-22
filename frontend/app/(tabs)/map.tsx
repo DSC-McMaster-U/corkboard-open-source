@@ -30,7 +30,7 @@ export default function MapScreen() {
       setLoading(true);
       setError(null);
       try {
-        const res = await apiFetch<EventList>(`/events?limit=${eventLimit}&min_cost=${range[0]}&max_cost=${range[1]}`,
+        const res = await apiFetch<EventList>(`api/events?limit=${eventLimit}&min_cost=${range[0]}&max_cost=${range[1]}`,
           { signal: controller.signal}
         );
         if (isMounted) {
