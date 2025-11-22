@@ -10,7 +10,13 @@ router.get(
     "/",
     authService.validateToken,
     async (req: Request, res: Response) => {
-        let user = authService.getUser(res);
+        const user = authService.getUser(res);
+
+        // handled unauthorized user
+        if (user == undefined) {
+            res.status(401).json({ error: "Unauthorized" });
+            return;
+        }
 
         res.status(200).json({ user: user });
     }
@@ -32,11 +38,11 @@ router.post("/", async (req: Request, res: Response) => {
 
     userService
         .createUser(name, email)
-        .then(() => {
-            res.status(200);
+        .then((user) => {
+            res.status(200).json({ success: true, user: user });
         })
         .catch((err: Error) => {
-            res.status(500).json({ error: err });
+            res.status(500).json({ error: err.message });
         });
 });
 

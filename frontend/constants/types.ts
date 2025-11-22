@@ -12,9 +12,32 @@ export type EventData = {
   source_type: string | undefined, //Source Type Enum
   source_url: string | undefined
   ingestion_status: string | undefined, //Ingestion Status Enum
+  artist?: string,
+  image?: string,
+  venues: VenueData,
+  event_genres?: GenreData[],
 }
 
 export type EventList = {
   events: EventData[];
   count: number;
+}
+
+export type VenueData = {
+  id: string,
+  name: string,
+  address?: string,
+  latitude?: number,
+  longitude?: number,
+  venue_type?: string,
+}
+
+export type Genre = {
+  id: string;
+  name: string;
+}
+
+export type GenreData = {
+  genres: Genre;
+  genre_id: string;
 }
