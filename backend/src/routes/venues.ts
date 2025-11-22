@@ -17,6 +17,31 @@ router.get("/", async (req: Request, res: Response) => {
     }
 });
 
+router.post("/", async (req: Request, res: Response) => {
+    // Handle Input
+    const {
+        name = undefined,
+        venue_type = undefined,
+        address = undefined,
+    } = req.body;
+
+    if (name == undefined) {
+        res.status(400).json({ error: "Name is missing" });
+        return;
+    }
+
+    // Call Service
+    venueService
+        .createVenue(name, venue_type, address)
+        .then((_) => {
+            res.status(200).json({ success: true });
+        })
+        .catch((err: Error) => {
+            console.log("Error creating venue: ", err);
+            res.status(500).json({ success: false, error: err });
+        });
+});
+
 // Add more venue routes here (POST, PUT, DELETE, etc.)
 
 export default router;

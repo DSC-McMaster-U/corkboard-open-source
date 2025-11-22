@@ -6,11 +6,16 @@ import express from "express";
 import type { Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import eventRoutes from "./routes/events.js";
 import venueRoutes from "./routes/venues.js";
 import healthRoutes from "./routes/health.js";
 import userRoutes from "./routes/users.js";
 import bookmarkRoutes from "./routes/bookmarks.js";
+
+// Cursed way to get dir name to work with both TS and babel (jest)
+import __dirname from "./meta.cjs";
 
 // Load environment variables
 //dotenv.config();
@@ -18,12 +23,21 @@ import bookmarkRoutes from "./routes/bookmarks.js";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Get directory paths
+//const __filename = fileURLToPath(import.meta.url); // get the filename of the current module
+//const __dirname = path.dirname(__filename); // get the directory name of the current module
+
 // Middleware
 if (!process.env.TEST_ENV) {
     app.use(cors());
 }
 
 app.use(express.json());
+
+// Images can be accessed via: http://localhost:3000/images/events/event-123.jpg
+app.use(
+    express.static(path.join(path.normalize(__dirname as string), "../public"))
+); // backend/public/
 
 // Main page
 app.get("/", (req: Request, res: Response) => {

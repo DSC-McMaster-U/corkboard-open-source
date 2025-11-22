@@ -1,23 +1,42 @@
 import request from "supertest";
 import { describe, it, expect } from "@jest/globals";
 import app from "../app.js";
+import { db } from "../db/supabaseClient.js";
+import { strictMatchFields } from "../utils/cmp.js";
+import { parseDateOr } from "../utils/parser.js";
 
 // TODO: Replace the bypass token with an actual token for a test user
 let bypassUserToken = "TESTING_BYPASS";
 
 type Event = {
-    id: number;
+    id: string; // UUID
     title: string;
-    venue_id: number;
-    // TODO Change tests to account for joins with venue table
-    //venue_name: string;
-    //venue_address: string;
+    description: string | undefined;
     start_time: string;
-    cost: number;
+    cost: number | undefined; // Can be null
     status: string;
     created_at: string;
-    source_type: string;
-    source_url: string;
+    source_type: string | undefined;
+    source_url: string | undefined;
+    artist: string | undefined;
+    image: string | undefined;
+    venues: {
+        id: string;
+        name: string;
+        address: string | undefined;
+        venue_type: string | undefined;
+        latitude: number | undefined;
+        longitude: number | undefined;
+    };
+    event_genres:
+        | Array<{
+              genre_id: string;
+              genres: {
+                  id: string;
+                  name: string;
+              };
+          }>
+        | undefined;
 };
 
 describe("GET /api/events/", () => {
@@ -116,5 +135,228 @@ describe("GET /api/events/", () => {
         console.warn(
             "This test is not implemented, will be implemented in MVP 2"
         );
+    });
+
+    it("should not return empty data for required fields", async () => {
+        let response = await request(app).get(path + "?limit=100");
+
+        let events: Array<Event> = response.body.events;
+
+        expect(events.length).toBeGreaterThan(0);
+
+        for (let i = 0; i < events.length; i++) {
+            let event = events[i]!;
+
+            expect(event.id).not.toBe("");
+            expect(parseDateOr(event.created_at, new Date("1970"))).not.toBe(
+                new Date("1970")
+            );
+            expect(event.venues.id).not.toBe("");
+            expect(event.venues.name).not.toBe("");
+        }
+    });
+
+    it("should return an event matching the given criteria", async () => {
+        let start_time = new Date("2025-10-27").toISOString();
+        let end_time = new Date("2025-10-28").toISOString();
+
+        let id = "a4e66b5f-4f1f-4d5a-9813-579a3436dbe2";
+
+        let response = await request(app).get(
+            path +
+                `?limit=100&min_cost=20&max_cost=20&min_start_time${start_time}&max_start_time=${end_time}`
+        );
+
+        let events: Array<Event> = response.body.events;
+
+        expect(events.length).toBeGreaterThan(0);
+
+        let found = false;
+
+        for (let i = 0; i < events.length; i++) {
+            let event = events[i]!;
+
+            if (event.id !== "a4e66b5f-4f1f-4d5a-9813-579a3436dbe2") {
+                continue;
+            }
+
+            // Event Field Verification
+            expect(event.title).toBe("Electronic Showcase");
+            expect(event.description).toBe("Electronic music showcase");
+            expect(event.cost).toBe(20);
+            expect(event.start_time).toBe("2025-10-27T23:37:49.998663+00:00");
+            expect(event.status).toBe("published");
+            expect(event.created_at).toBe("2025-10-26T23:37:49.998663");
+            expect(event.source_type).toBe("manual");
+            expect(event.source_url).toBeNull();
+            expect(event.artist).toBe("Hamilton's Finest");
+            expect(event.image).toBe("images/events/the-underground-maybe.jpg");
+
+            // Venue Verification
+            expect(event.venues.id).toBe(
+                "b28f8296-005a-48f1-b8ed-47a13fca3215"
+            );
+            expect(event.venues.name).toBe("The Underground");
+            expect(event.venues.address).toBe("123 James St N, Hamilton, ON");
+            expect(event.venues.venue_type).toBe("bar");
+            expect(event.venues.latitude).toBe(43.2577778);
+            expect(event.venues.longitude).toBe(-79.8744444);
+
+            // Genre Verification
+            let sortedGenres = [...event.event_genres!].sort();
+
+            expect(sortedGenres[0]?.genre_id).toBe(
+                "0049ad43-60b4-4507-bf3c-87980a3d9702"
+            );
+            expect(sortedGenres[0]?.genres.id).toBe(
+                "0049ad43-60b4-4507-bf3c-87980a3d9702"
+            );
+            expect(sortedGenres[0]?.genres.name).toBe("Electronic");
+            expect(sortedGenres[1]?.genre_id).toBe(
+                "867e8b7b-9f23-4cb4-b9f5-731a4ba6e92e"
+            );
+            expect(sortedGenres[1]?.genres.id).toBe(
+                "867e8b7b-9f23-4cb4-b9f5-731a4ba6e92e"
+            );
+            expect(sortedGenres[1]?.genres.name).toBe("Rock");
+
+            found = true;
+        }
+
+        expect(found).toBe(true);
+    });
+});
+
+describe("POST /api/events/", () => {
+    let path = "/api/events";
+
+    it("should return code 401 if no authorization is passed", async () => {
+        const response = await request(app).post(path);
+
+        expect(response.statusCode).toBe(401);
+        expect(response.body.error).toBe("Unauthorized");
+    });
+
+    it("should return 400 if no title is passed", async () => {
+        const response = await request(app)
+            .post(path)
+            .set("Authorization", bypassUserToken)
+            .send({
+                venue_id: "123e4567-e89b-12d3-a456-426614174000",
+                start_time: new Date().toISOString(),
+            });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe("Title is missing");
+    });
+
+    it("should return 400 if no venue_id is passed", async () => {
+        const response = await request(app)
+            .post(path)
+            .set("Authorization", bypassUserToken)
+            .send({
+                title: "Test Event",
+                start_time: new Date().toISOString(),
+            });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe("Venue ID is missing");
+    });
+
+    it("should return 400 if no start_time is passed", async () => {
+        const response = await request(app)
+            .post(path)
+            .set("Authorization", bypassUserToken)
+            .send({
+                title: "Test Event",
+                venue_id: "123e4567-e89b-12d3-a456-426614174000",
+            });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe("Start time is missing");
+    });
+
+    it("should return 400 if an invalid start_time is passed", async () => {
+        const response = await request(app)
+            .post(path)
+            .set("Authorization", bypassUserToken)
+            .send({
+                title: "Test Event",
+                venue_id: "123e4567-e89b-12d3-a456-426614174000",
+                start_time: "ieaofjoeivnwoi",
+            });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.body.error).toBe("Invalid start time");
+    });
+
+    it("should return 500 and for an invalid venue_id", async () => {
+        const response = await request(app)
+            .post(path)
+            .set("Authorization", bypassUserToken)
+            .send({
+                title: "Test Event",
+                venue_id: "not-a-real-id",
+                start_time: new Date().toISOString(),
+                description: "Test Description",
+                cost: 10,
+                status: "active",
+            });
+
+        expect(response.statusCode).toBe(500);
+        expect(response.body.success).toBe(false);
+    });
+
+    it("should return 200 and insert into the database if all arguments are passed with a valid venue_id", async () => {
+        let eventId: string | undefined = undefined;
+        let error: string | undefined = undefined;
+
+        try {
+            // use a future date to satisfy the events_start_time_future constraint
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 1); // tomorrow
+
+            const eventBody = {
+                title: "Test Event",
+                venue_id: "1154dd33-674e-4494-afac-594968579624",
+                start_time: futureDate.toISOString(),
+                description: "Test Description",
+                cost: 10,
+                status: "published",
+            };
+
+            const response = await request(app)
+                .post(path)
+                .set("Authorization", bypassUserToken)
+                .send(eventBody);
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.success).toBe(true);
+
+            eventId = response.body.id;
+
+            let inserted = await db.events.getById(eventId!);
+
+            expect(
+                strictMatchFields(eventBody, inserted.data, [
+                    "title",
+                    "venue_id",
+                    "start_time",
+                    "description",
+                    "cost",
+                    "status",
+                ])
+            );
+        } catch (err: any) {
+            error = err as string;
+        } finally {
+            if (eventId != undefined) {
+                await db.events.deleteById(eventId);
+            }
+
+            if (error != undefined) {
+                throw error;
+            }
+        }
     });
 });
