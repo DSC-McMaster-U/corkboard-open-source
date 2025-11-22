@@ -3,20 +3,23 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import EventModal from '@/components/event-modal';
 import BottomPanel from '@/components/bottom-panel/bottom-panel'; 
+import type { EventData, EventList } from "@/constants/types";
+import { formatEventDateTimeToDate, formatEventDateTimeToTime } from "@/scripts/helpers";
+import { apiFetch } from "@/api/api";
 
-type Event = {
-  id: string;
-  title: string;
-  description: string;
-  start_time: string;
-  cost: number;
-  venue_id: string;
-};
+
+type InfoBoxProps = {
+  event: EventData;
+  onPress: () => void;
+}
 
 type InfoBoxType = {show_name: string, artist: string, date: string, time: string, location: string, genre: string, image: string;};
 
-function InfoBox({show_name, artist, date, time, location, genre, image, onPress}: InfoBoxType & { onPress: () => void }) {
+
+function InfoBox({ event, onPress }: InfoBoxProps) {
   return (
+
+
     <TouchableOpacity onPress={onPress}>
       <View
         style={{
@@ -32,41 +35,41 @@ function InfoBox({show_name, artist, date, time, location, genre, image, onPress
         {/* Show Name */}
         <Text
           style={{ position: 'absolute', top: 10, left: 15, fontSize: 18, fontWeight: 'bold', color: 'white'}}>
-          {show_name}
+          {event.title}
         </Text>
 
         {/* Artist */}
         <Text style={{ position: 'absolute', top: 27, left: 15, fontSize: 16, color: 'white'}}>
-          {artist}
+          {"Artist"}
         </Text>
 
         {/* Location */}
         <View style={{ position: 'absolute', bottom: 63, left: 15, flexDirection: 'row', alignItems: 'center' }}>
           <FontAwesome name="map-marker" size={15} color="white" />
-          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{location}</Text>
+          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{event.venue_id}</Text>
         </View>
 
         {/* Date */}
         <View style={{ position: 'absolute', bottom: 44, left: 13, flexDirection: 'row', alignItems: 'center' }}>
           <FontAwesome name="calendar" size={14} color="white" />
-          <Text style={{fontSize: 14, color: 'white', marginLeft: 5}}>{date}</Text>
+          <Text style={{fontSize: 14, color: 'white', marginLeft: 5}}>{formatEventDateTimeToDate(event.start_time)}</Text>
         </View>
 
         {/* Time */}
         <View style={{ position: 'absolute', bottom: 25, left: 13, flexDirection: 'row', alignItems: 'center'}}>
           <FontAwesome name="clock-o" size={14} color="white" />
-          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{time}</Text>
+          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{formatEventDateTimeToTime(event.start_time)}</Text>
         </View>
 
         {/* Genre */}
         <View style={{ position: 'absolute', bottom: 7, left: 11, flexDirection: 'row', alignItems: 'center' }}>
           <FontAwesome name="music" size={14} color="white" />
-          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6}}>{genre}</Text>
+          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6}}>{"genre"}</Text>
         </View>
 
         {/* Photo rectangle */}
         <Image
-          source={{ uri: image }} 
+          source={{ uri: "https://www.adobe.com/creativecloud/photography/type/media_15955bf89f635a586d897b5c35f7a447b495f6ed7.jpg?width=1200&format=pjpg&optimize=medium" }} 
           style={{ width: 98, height: 92, borderRadius: 3, position: 'absolute', top: 22, right: 14 }}
         />
       </View>
@@ -81,31 +84,48 @@ export default function EventsScreen() {
   const [range, setRange] = useState<[number, number]>([10, 70]);  // set up state for ticket price slider bar
   const [selectedEvent, setSelectedEvent] = useState<any>(null); // store event object that user clicks
   const [modalVisible, setModalVisible] = useState(false); // modal state to open/close event popup
-  const [eventList, setEventList] = useState<Event[]>([]); // store events from backend
+  const [eventList, setEvents] = useState<EventData[]>([]); // store events from backend
   const [loading, setLoading] = useState(true);  // tracks if data is still being fetched
   const [error, setError] = useState<string | null>(null); // track errors during data fetching
 
+  const eventLimit = 4;
+
   useEffect(() => {
-    // async function to fetch event data from backend
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch("http://192.168.0.19:3000/api/events"); // send GET request to backend
-        if (!response.ok) throw new Error(`Error ${response.status}`);
-        console.log("Response received:", response.status);
-        const data: Event[] = await response.json(); 
-        console.log("Data:", data);
-        setEventList(data); // store the data in state
-      } 
-      catch (err: any) {
-        setError(err.message); // if there is an error, store in error
-        console.error("Fetch error:", err);
-      } 
-      finally {
-        setLoading(false); // if data fetching is successful set loading to false 
-      }
-    };
-  fetchEvents();
-}, []);
+      const controller = new AbortController();
+      let isMounted = true;
+  
+      const fetchEvents = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const res = await apiFetch<EventList>(`/events?limit=${eventLimit}&min_cost=${range[0]}&max_cost=${range[1]}`,
+            { signal: controller.signal}
+          );
+          if (isMounted) {
+            console.log("Fetched events:", res.events);
+            setEvents(res.events || []);
+          }
+        } catch (err: any) {
+          if (isMounted && err.name !== "AbortError") {
+            setError(err.message || "Failed to fetch events");
+            console.error("Error fetching events:", err);
+          }
+        } finally {
+          if (isMounted) {
+            setLoading(false);
+          }
+        }
+      };
+  
+      // Debounce: wait 300ms after range changes before fetching
+      const timer = setTimeout(fetchEvents, 300);
+  
+      return () => {
+        clearTimeout(timer);
+        controller.abort();
+        isMounted = false;
+      };
+    }, [range]);
 
 
 
@@ -123,27 +143,16 @@ export default function EventsScreen() {
     <View className="flex-1 flex-col justify-start items-center bg-[#FFF0E2]">
       <ScrollView contentContainerStyle={{paddingTop: 120, paddingBottom: 150, alignItems: 'center'}}>
         
-        {eventList.map((event) => {
-
-        const dateObj = new Date(event.start_time);
-
-        return (
+        {eventList.map((event) => (
           <InfoBox
-            key={event.id}
-            show_name={event.title}
-            artist={"Unknown"} // replace with artist later
-            date={dateObj.toLocaleDateString()} 
-            time={dateObj.toLocaleTimeString()}  
-            location={event.venue_id || "Unknown"}
-            genre={"Unknown"} // update later
-            image={"https://media.pitchfork.com/photos/5a9f0c13b848c0268b2016bb/1:1/w_450%2Cc_limit/The%2520Neighbourhood.jpg"}
+            key={event.id} 
+            event={event}   
             onPress={() => {
               setSelectedEvent(event);
               setModalVisible(true);
             }}
           />
-        );
-      })}
+        ))}
       </ScrollView>
       
       <EventModal

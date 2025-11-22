@@ -1,23 +1,16 @@
 import { Modal, View, Text, TouchableOpacity, Linking, Image } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-
+import { EventData } from "@/constants/types";
+import { formatEventDateTime, formatEventDateTimeToDate, formatEventDateTimeToTime } from "@/scripts/helpers";
 
 type EventModalProps = {
   visible: boolean;
   onClose: () => void;
-  data: {
-    show_name: string;
-    artist: string;
-    date: string;
-    time: string;
-    location: string;
-    genre: string;
-    image: string;
-    description: string;
-  } | null;
+  data: EventData | null;
 };
 
 export default function EventModal({ visible, onClose, data }: EventModalProps) {
+  //console.log("EventModal data:", data);
   if (!data) return null;
 
   return (
@@ -42,41 +35,49 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
         >
           {/* Show Name */}
         <Text style={{ position: 'absolute', top: 10, left: 15, fontSize: 18, fontWeight: 'bold', color: 'white' }}>
-          {data.show_name}
+          {data.title}
         </Text>
 
         {/* Artist */}
         <Text style={{ position: 'absolute', top: 27, left: 15, fontSize: 18, color: 'white'}}>
-          {data.artist}
+          {"placeholder artist"}
         </Text>
 
         {/* Date */}
         <View style={{position: 'absolute', top: 78, left: 15, flexDirection: 'row', alignItems: 'center'}}>
           <FontAwesome name="calendar" size={14} color="white" />
-          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{data.date}</Text>
+          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>
+            {formatEventDateTimeToDate(data.start_time)}
+          </Text>
         </View>
 
         {/* Time */}
         <View style={{ position: 'absolute', top: 98, left: 15, flexDirection: 'row', alignItems: 'center'}}>
           <FontAwesome name="clock-o" size={14} color="white" />
-          <Text style={{fontSize: 14, color: 'white', marginLeft: 6}}>{data.time}</Text>
+          <Text style={{fontSize: 14, color: 'white', marginLeft: 6}}>
+            {formatEventDateTimeToTime(data.start_time)}
+          </Text>
         </View>
 
           {/* Location */}
         <View style={{ position: 'absolute', top: 60, left: 15, flexDirection: 'row', alignItems: 'center' }}>
           <FontAwesome name="map-marker" size={14} color="white" />
-          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{data.location}</Text>
+          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>
+            {data.venue_id}
+          </Text>
         </View>
 
           {/* Genre */}
         <View
           style={{ position: 'absolute', top: 115, left: 15, flexDirection: 'row', alignItems: 'center'}}>
           <FontAwesome name="music" size={14} color="white" />
-          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{data.genre}</Text>
+          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>
+            {"placeholder genre"}
+          </Text>
         </View>
 
         <Image
-          source={{ uri: data.image }} 
+          source={{ uri: "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b"}} // temp placeholder
           style={{width: 124, height: 120, borderRadius: 3, position: 'absolute', top: 14, right: 14 }}
         />
 
