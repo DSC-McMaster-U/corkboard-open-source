@@ -139,17 +139,6 @@ export default function EventsScreen() {
     }, [range]);
 
 
-
-  /*
-  const eventList = [
-    {show_name: "The Art of Loving", artist: "Olivia Dean", date: "Dec 3", time: "8:00pm", location: "FirstOntario Hall", genre: "Pop", image: "https://hips.hearstapps.com/hmg-prod/images/lead-press-2-68e815b83e780.jpg?crop=1.00xw:0.653xh;0,0.0410xh&resize=1120:*", description: "This is a description."},
-    {show_name: "No Hard Feelings", artist: "The Beaches", date: "Dec 6", time: "8:00pm", location: "TD Coliseum", genre: "Rock", image: "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b", description: "This is a description."},
-    {show_name: "World Tour", artist: "The Neighbourhood", date: "Dec 12", time: "7:00pm", location: "FirstOntario Hall", genre: "Rock", image: "https://media.pitchfork.com/photos/5a9f0c13b848c0268b2016bb/1:1/w_450%2Cc_limit/The%2520Neighbourhood.jpg", description: "This is a description."},
-    {show_name: "Unreal Earth Tour", artist: "Hozier", date: "Dec 13", time: "6:00pm", location: "FirstOntario Hall", genre: "Rock", image: "https://s1.ticketm.net/dam/a/9fe/d6cc61a9-9850-4e4b-9a7e-893c63c629fe_RETINA_PORTRAIT_3_2.jpg", description: "This is a description."},
-    {show_name: "World Tour", artist: "Jonas Brothers", date: "Dec 14", time: "7:00pm", location: "TD Coliseum", genre: "Pop", image: "https://s1.ticketm.net/dam/a/257/0f1a51cd-670d-41ca-bb6f-775ea30f6257_RETINA_PORTRAIT_3_2.jpg", description: "This is a description."}
-  ]
-    */
-
   return (
 
     <SafeAreaView className='bg-[#AE6E4E] flex-1' edges={['top', 'left', 'right']}>
