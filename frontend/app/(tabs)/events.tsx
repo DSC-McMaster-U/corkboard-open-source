@@ -8,7 +8,6 @@ import { formatEventDateTimeToDate, formatEventDateTimeToTime } from "@/scripts/
 import { apiFetch , getImageUrl } from "@/api/api";
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-
 type InfoBoxProps = {
   event: EventData;
   onPress: () => void;
@@ -17,76 +16,125 @@ type InfoBoxProps = {
 const PLACEHOLDER_IMAGE =
   "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b";
 
-
 function InfoBox({ event, onPress }: InfoBoxProps) {
-
   const imageUri = event.image ? getImageUrl(event.image) : PLACEHOLDER_IMAGE;
+  const venueName = event.venues?.name || "Unspecified venue";
+  const artist = event.artist || "Unspecified artist";
+  const genresText = event.event_genres && event.event_genres.length > 0
+    ? event.event_genres.map((eg) => eg.genres.name).join(", ")
+    : "Unspecified";
 
   return (
+    <TouchableOpacity onPress={onPress} className='w-full px-4 mb-3'>
+      <View className='w-full flex-row bg-[#3e0000] rounded-xl p-3'>
+        {/* left side - text content */}
+        <View className='flex-1 justify-between'>
+          {/* Title + Artist */}
+          <View>
+            <Text className='text-white text-lg font-bold' numberOfLines={2}>
+              {event.title}
+            </Text>
+            <Text className='text-neutral-200 text-base mt-0.5' numberOfLines={1}>
+              {artist}
+            </Text>
+          </View>
 
-    <TouchableOpacity onPress={onPress}>
-      <View
-        style={{
-          width: 360,
-          height: 135,
-          backgroundColor: '#3e0000',
-          borderRadius: 8,
-          marginVertical: 4,
-          position: 'relative',
-        }}
-      >
+          {/* Venue */}
+          <View className='flex-row items-center mt-1'>
+            <FontAwesome name="map-marker" size={14} color="#fff" />
+            <Text className='text-white text-sm ml-1.5' numberOfLines={1}>
+              {venueName}
+            </Text>
+          </View>
 
-        {/* Show Name */}
-        <Text
-          style={{ position: 'absolute', top: 10, left: 15, fontSize: 18, fontWeight: 'bold', color: 'white'}}>
-          {event.title}
-        </Text>
+          {/* Date + time chips */}
+          <View className="flex-row items-center mt-1">
+            <View className="flex-row items-center bg-white/10 rounded-full px-2 py-0.5 mr-1.5">
+              <FontAwesome name="calendar" size={11} color="#fff" />
+              <Text className="text-white text-xs ml-1">
+                {formatEventDateTimeToDate(event.start_time)}
+              </Text>
+            </View>
+            <View className="flex-row items-center bg-white/10 rounded-full px-2 py-0.5">
+              <FontAwesome name="clock-o" size={11} color="#fff" />
+              <Text className="text-white text-xs ml-1">
+                {formatEventDateTimeToTime(event.start_time)}
+              </Text>
+            </View>
+          </View>
 
-        {/* Artist */}
-        <Text style={{ position: 'absolute', top: 27, left: 15, fontSize: 16, color: 'white'}}>
-          {event.artist ? event.artist : "Unspecified artist"}
-        </Text>
-
-        {/* Location */}
-        <View style={{ position: 'absolute', bottom: 63, left: 15, flexDirection: 'row', alignItems: 'center' }}>
-          <FontAwesome name="map-marker" size={15} color="white" />
-          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>
-            {event.venues.name ? event.venues.name : "Unspecified venue"}
-          </Text>
+          {/* Genres */}
+          <View className="mt-1">
+            <View className="flex-row items-center">
+              <FontAwesome name="music" size={12} color="#fff" />
+              <Text
+                className="text-white text-xs ml-1.5"
+                numberOfLines={1}
+              >
+                {genresText}
+              </Text>
+            </View>
+          </View>
         </View>
 
-        {/* Date */}
-        <View style={{ position: 'absolute', bottom: 44, left: 13, flexDirection: 'row', alignItems: 'center' }}>
-          <FontAwesome name="calendar" size={14} color="white" />
-          <Text style={{fontSize: 14, color: 'white', marginLeft: 5}}>{formatEventDateTimeToDate(event.start_time)}</Text>
-        </View>
-
-        {/* Time */}
-        <View style={{ position: 'absolute', bottom: 25, left: 13, flexDirection: 'row', alignItems: 'center'}}>
-          <FontAwesome name="clock-o" size={14} color="white" />
-          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{formatEventDateTimeToTime(event.start_time)}</Text>
-        </View>
-
-        {/* Genre */}
-        <View style={{ position: 'absolute', bottom: 7, left: 11, flexDirection: 'row', alignItems: 'center' }}>
-          <FontAwesome name="music" size={14} color="white" />
-          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6}}>
-            {event.event_genres && event.event_genres.length > 0
-              ? event.event_genres.map((eg) => eg.genres.name).join(", ")
-              : "Unspecified"
-            }
-          </Text>
-        </View>
-
-        {/* Photo rectangle */}
-        <Image
-          source={{ uri: imageUri }} 
-          style={{ width: 98, height: 92, borderRadius: 3, position: 'absolute', top: 22, right: 14 }}
-        />
+        {/* right side - image */}
+        <Image source={{ uri: imageUri }} className='w-[32%] h-full rounded-md' resizeMode="cover" />
       </View>
     </TouchableOpacity>
   );
 }
+
+//         {/* Show Name */}
+//         <Text
+//           style={{ position: 'absolute', top: 10, left: 15, fontSize: 18, fontWeight: 'bold', color: 'white'}}>
+//           {event.title}
+//         </Text>
+
+//         {/* Artist */}
+//         <Text style={{ position: 'absolute', top: 27, left: 15, fontSize: 16, color: 'white'}}>
+//           {event.artist ? event.artist : "Unspecified artist"}
+//         </Text>
+
+//         {/* Location */}
+//         <View style={{ position: 'absolute', bottom: 63, left: 15, flexDirection: 'row', alignItems: 'center' }}>
+//           <FontAwesome name="map-marker" size={15} color="white" />
+//           <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>
+//             {event.venues.name ? event.venues.name : "Unspecified venue"}
+//           </Text>
+//         </View>
+
+//         {/* Date */}
+//         <View style={{ position: 'absolute', bottom: 44, left: 13, flexDirection: 'row', alignItems: 'center' }}>
+//           <FontAwesome name="calendar" size={14} color="white" />
+//           <Text style={{fontSize: 14, color: 'white', marginLeft: 5}}>{formatEventDateTimeToDate(event.start_time)}</Text>
+//         </View>
+
+//         {/* Time */}
+//         <View style={{ position: 'absolute', bottom: 25, left: 13, flexDirection: 'row', alignItems: 'center'}}>
+//           <FontAwesome name="clock-o" size={14} color="white" />
+//           <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{formatEventDateTimeToTime(event.start_time)}</Text>
+//         </View>
+
+//         {/* Genre */}
+//         <View style={{ position: 'absolute', bottom: 7, left: 11, flexDirection: 'row', alignItems: 'center' }}>
+//           <FontAwesome name="music" size={14} color="white" />
+//           <Text style={{ fontSize: 14, color: 'white', marginLeft: 6}}>
+//             {event.event_genres && event.event_genres.length > 0
+//               ? event.event_genres.map((eg) => eg.genres.name).join(", ")
+//               : "Unspecified"
+//             }
+//           </Text>
+//         </View>
+
+//         {/* Photo rectangle */}
+//         <Image
+//           source={{ uri: imageUri }} 
+//           style={{ width: 98, height: 92, borderRadius: 3, position: 'absolute', top: 22, right: 14 }}
+//         />
+//       </View>
+//     </TouchableOpacity>
+//   );
+// }
 
 
 
@@ -153,8 +201,7 @@ export default function EventsScreen() {
       </View>
 
       <View className="flex-1 bg-[#FFF0E2]">
-        <ScrollView contentContainerStyle={{paddingTop: 20, paddingBottom: 150, alignItems: 'center'}}>
-          
+        <ScrollView contentContainerStyle={{paddingTop: 20, paddingBottom: 150 }}>
           {eventList.map((event) => (
             <InfoBox
               key={event.id} 
