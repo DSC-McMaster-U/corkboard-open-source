@@ -31,7 +31,10 @@ export async function scrapeWebsite(url: string) {
       // const stage = "";
       let rawTimeAndStage = outerDiv.next("div").find("strong").first().text().trim();
       let timeAndStage = rawTimeAndStage.split(" – ");
-      const description = timeAndStage[1] ?? ""
+      let description = timeAndStage[1] ?? "";
+      const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9](am|pm)$/i;
+      if (timeRegex.test(description))
+        description = timeAndStage[2] ?? "";
 
 
       const rawTime = timeAndStage[0] ?? "";
@@ -60,7 +63,6 @@ export async function scrapeWebsite(url: string) {
       let parts = rawDate.split(" ");
       let dd = parts[2]?.replace(/\D+/g, "") ?? 0;
       if (!dd) return;
-      // dd = dd.padStart(2, "0");
       let yyyy = new Date().getFullYear();
 
       const monthDict = {
@@ -74,14 +76,6 @@ export async function scrapeWebsite(url: string) {
       if (mm === undefined) return;
 
       const start_time = new Date(Date.UTC(yyyy, mm, Number(dd), Number(hourStr), Number(minStr), 0));
-      // let start_time = [];
-      // start_time.push(String(yyyy));
-      // start_time.push(String(mm));
-      // start_time.push(String(dd));
-      // start_time.push(hourStr);
-      // start_time.push(minStr);
-
-
 
       results.push({ start_time, description, title });
     });
