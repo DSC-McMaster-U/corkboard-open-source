@@ -51,15 +51,10 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
         onPress={onClose}
       >
         {/* Sheet container – stop propagation so taps inside don’t close */}
-        <Pressable className="w-full flex-1 justify-end" onPress={() => {}}>
+        <Pressable className="w-full justify-end" onPress={() => {}}>
           <View className="w-full min-h-[75%] rounded-t-3xl overflow-hidden bg-[#3e0000]">
-            {/* Handle */}
-            <View className="pt-2 pb-1 items-center">
-              <View className="w-10 h-1.5 rounded-full bg-neutral-400" />
-            </View>
-
             {/* Hero image with overlay + date pill */}
-            <View className="w-full h-44 relative overflow-hidden">
+            <View className="w-full h-44 relative overflow-hidden mt-2">
               <Image
                 source={{ uri: imageUri }}
                 className="w-full h-full"
