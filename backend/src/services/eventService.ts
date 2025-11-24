@@ -49,5 +49,31 @@ export const eventService = {
         if (error) throw error;
         return data ?? [];
     }
+    createEvent: async (
+        title: string,
+        venue_id: string,
+        start_time: string,
+        description?: string,
+        cost?: number,
+        status?: string,
+        source_type?: string,
+        source_url?: string,
+        image?: string
+    ) => {
+        const { data, error } = await db.events.create({
+            title: title,
+            description: description,
+            venue_id: venue_id,
+            start_time: start_time,
+            cost: cost,
+            status: status,
+            source_type: source_type,
+            source_url: source_url,
+            image: image,
+        });
+
+        if (error) throw error;
+        return data;
+    },
     // Add more event service methods here
 };

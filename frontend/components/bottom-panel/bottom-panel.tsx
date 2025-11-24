@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function BottomPanel({ range, setRange }: Props) {
-  const snapPoints = useMemo(() => ['4%', '50%'], []);
+  const snapPoints = useMemo(() => ['12%', '45%'], []);
   const [searchActive, setSearchActive] = useState(false);
   const dismissRef = useRef<() => void>(() => {});
 

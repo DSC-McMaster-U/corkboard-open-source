@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // adding components
 import { ExploreSearch } from '@/components/explore/search-bar';
 import { ExploreShows } from '@/components/explore/explore-shows';
-import { TrendingSongs } from '@/components/explore/trending-songs';
+import { TrendingArtists } from '@/components/explore/trending-songs';
 import { FeaturedArtist } from '@/components/explore/featured-artist';
 
 //import {} from 'expo-router';
@@ -29,7 +29,7 @@ export default function ExploreScreen() {
             {/* Trending Songs/Artists */}
             <View className='mb-8'>
               <Text className='text-lg mb-4 text-foreground font-semibold tracking-wide'>Trending local artists</Text>
-              <TrendingSongs />
+              <TrendingArtists />
             </View>
 
             {/* Explore shows section*/}

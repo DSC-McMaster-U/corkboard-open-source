@@ -1,13 +1,36 @@
 import { db } from "../db/supabaseClient.js";
 
 export const bookmarkService = {
-    getBookmarks: async (userId: number) => {
-        throw new Error("bookmarkService.getBookmarks is unimplemented");
+    getBookmarks: async (userId: string) => { // note: UUID use string
+        const { data, error } = await db.bookmarks.getByUserId(userId);
+        if (error) throw error;
+        return data || [];
     },
-    addBookmark: async (userId: number, eventId: number) => {
-        throw new Error("bookmarkService.addBookmark is unimplemented");
+    addBookmark: async (userId: string, eventId: string) => {
+        const { data: event, error: eventError } = await db.events.getById(eventId);
+        if (eventError || !event) {
+            throw new Error("Event not found");
+        }
+        
+        // check if already bookmarked
+        const { data: existing } = await db.bookmarks.exists(userId, eventId);
+        if (existing) {
+            throw new Error("Event already bookmarked");
+        }
+        
+        const { data, error } = await db.bookmarks.create(userId, eventId);
+        if (error) throw error;
+        return data;
     },
-    removeBookmark: async (userId: number, eventId: number) => {
-        throw new Error("bookmarkService.removeBookmark is unimplemented");
+    removeBookmark: async (userId: string, eventId: string) => {
+        // check if bookmark exists
+        const { data: existing } = await db.bookmarks.exists(userId, eventId);
+        if (!existing) {
+            throw new Error("Bookmark not found");
+        }
+        
+        const { error } = await db.bookmarks.delete(userId, eventId);
+        if (error) throw error;
+        return true;
     },
 };

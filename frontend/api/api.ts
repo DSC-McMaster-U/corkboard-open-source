@@ -3,8 +3,8 @@ import { Platform } from 'react-native';
 
 // works for android emulator and iOS simulator
 const BASE_URL = __DEV__ && Platform.OS === 'android' 
-  ? 'http://10.0.2.2:3000/api'
-  : 'http://localhost:3000/api';
+  ? 'http://10.0.2.2:3000/'
+  : 'http://localhost:3000/';
 
 export type ApiError = { status?: number; message: string };
 
@@ -32,4 +32,11 @@ export async function apiFetch<T>(
     throw err;
   }
   return (await res.json()) as T;
+}
+
+export function getImageUrl(imagePath: string | undefined): string {
+  if (imagePath) {
+    return `${BASE_URL}${imagePath}`;
+  }
+  return '';
 }

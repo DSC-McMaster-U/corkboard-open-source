@@ -1,42 +1,15 @@
 import { useState, useEffect, use } from "react";
-import { View, Text, StatusBar } from 'react-native';
+import { View, Text, StatusBar, ActivityIndicator } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomPanel from '@/components/bottom-panel/bottom-panel'; 
 import EventModal from '@/components/event-modal'; 
 import { apiFetch } from "@/api/api";
 import { EventData, EventList } from "@/constants/types";
-import { formatEventDateTime } from "@/scripts/helpers";
-// import { } from 'expo-router';
-
-const HAMILTON = { latitude: 43.2557, longitude: -79.8711, latitudeDelta: 0.08, longitudeDelta: 0.08 };
-
-const venues = [
-  {
-    show_name: "The Art of Loving",
-    artist: "Olivia Dean",
-    date: "Dec 3",
-    time: "8:00pm",
-    location: "FirstOntario Hall",
-    genre: "Pop",
-    image: "https://hips.hearstapps.com/hmg-prod/images/lead-press-2-68e815b83e780.jpg?crop=1.00xw:0.653xh;0,0.0410xh&resize=1120:*",
-    description: "This is a description.",
-    lat: 43.2564,
-    lng: -79.8717,
-  },
-  {
-    show_name: "No Hard Feelings",
-    artist: "The Beaches",
-    date: "Dec 6",
-    time: "8:00pm",
-    location: "TD Coliseum",
-    genre: "Rock",
-    image: "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b",
-    description: "This is a description.",
-    lat: 43.2590,
-    lng: -79.8723,
-  },
-];
+import { formatEventDateTime } from "@/scripts/formatDateHelper";
+import { useNavBarVisibility } from "@/scripts/navBarVisibility";
+const HAMILTON = { latitude: 43.2557, longitude: -79.8711, latitudeDelta: 0.04, longitudeDelta: 0.04 };
+const eventLimit = 20;
 
 export default function MapScreen() {
   const [range, setRange] = useState<[number, number]>([10, 70]);
@@ -46,9 +19,15 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const eventLimit = 4;
+  const { hideNavBar, showNavBar } = useNavBarVisibility();
+  useEffect(() => {
+    if (modalVisible) hideNavBar();
+    else showNavBar();
+  }, [modalVisible]);
 
-  // this will fetch venues from the backend when the page is loaded or range changes
+  // fetch events when:
+  // - screen first mounds
+  // - range changes
   useEffect(() => {
     const controller = new AbortController();
     let isMounted = true;
@@ -57,7 +36,7 @@ export default function MapScreen() {
       setLoading(true);
       setError(null);
       try {
-        const res = await apiFetch<EventList>(`/events?limit=${eventLimit}&min_cost=${range[0]}&max_cost=${range[1]}`,
+        const res = await apiFetch<EventList>(`api/events?limit=${eventLimit}&min_cost=${range[0]}&max_cost=${range[1]}`,
           { signal: controller.signal}
         );
         if (isMounted) {
@@ -96,7 +75,7 @@ export default function MapScreen() {
       {/* Temporary header */}
       <View className="h-16 px-4 justify-end pb-3 bg-[#AE6E4E]">
         <View className="flex-row items-center justify-between">
-          <Text className="text-xl font-semibold text-white">Shows near you</Text>
+          <Text className="text-xl font-semibold text-white">Corkboard - Shows Near You</Text>
           <View className="w-8 h-8 rounded-full bg-blue-300" />
         </View>
       </View>
@@ -107,26 +86,21 @@ export default function MapScreen() {
           {events.map((e, idx) => (
             <Marker
             key={e.id}
-            coordinate={{
-              latitude: getRandomCoordinate(43.25, 0.01),
-              longitude: getRandomCoordinate(-79.88, 0.01),
+            coordinate={{ // temp using random coordinates near Hamilton center, latitude and longitude should be NOT NULL in future
+              latitude: typeof e.venues?.latitude === 'number'
+                ? e.venues.latitude
+                : getRandomCoordinate(43.25, 0.01),
+              longitude: typeof e.venues?.longitude === 'number'
+                ? e.venues.longitude
+                : getRandomCoordinate(-79.88, 0.01),
             }}
             title={e.title}
-            description={`${formatEventDateTime(e.start_time)} • ${e.description}`}
-          >
-            <Callout
-              onPress={() => {
-                setSelectedEvent(e);
-                setModalVisible(true);
-              }}
-            >
-              <View style={{ width: 130 }}>
-                <Text style={{ fontWeight: "600" }}>{e.title}</Text>
-                <Text>{/*e.artist*/ "placeholder"}</Text>
-                <Text style={{ marginTop: 6, textDecorationLine: "underline" }}>More details</Text>
-              </View>
-            </Callout>
-          </Marker>
+            // description={`${formatEventDateTime(e.start_time)} • ${e.description}`}
+            onPress={() => {
+              setSelectedEvent(e);
+              setModalVisible(true);
+            }}
+          />
           ))}
         </MapView>
 
@@ -134,6 +108,30 @@ export default function MapScreen() {
     
         {/* Bottom panel */}
         <BottomPanel range={range} setRange={setRange} />
+
+        {/* Loading overlay */}
+        {loading && (
+          <View className="absolute inset-0 justify-center items-center bg-black/40">
+            <ActivityIndicator size="large" />
+            <Text className="text-white mt-2">Loading events...</Text>
+          </View>
+        )}
+
+        {/* Error banner */}
+        {error && !loading && (
+          <View className="absolute inset-x-4 top-5 rounded-lg bg-red-800/90 px-3 py-2">
+            <Text className="text-white text-center text-sm">{error}</Text>
+          </View>
+        )}
+
+        {/* No results banner */}
+        {!loading && !error && events.length === 0 && (
+          <View className="absolute inset-x-4 top-5 rounded-lg bg-black/70 px-3 py-2">
+            <Text className="text-white text-center text-sm">
+              No events found for this price range.
+            </Text>
+          </View>
+        )}
       </View>
       
     </SafeAreaView>
