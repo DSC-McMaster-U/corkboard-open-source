@@ -147,7 +147,7 @@ export default function EventsScreen() {
       {/* Temporary header */}
       <View className="h-16 px-4 justify-end pb-3 bg-[#AE6E4E]">
         <View className="flex-row items-center justify-between">
-          <Text className="text-xl font-semibold text-white">Shows near you</Text>
+          <Text className="text-xl font-semibold text-white">Corkboard - Shows Near You</Text>
           <View className="w-8 h-8 rounded-full bg-blue-300" />
         </View>
       </View>
