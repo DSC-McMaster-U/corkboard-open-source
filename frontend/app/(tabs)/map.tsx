@@ -1,5 +1,5 @@
 import { useState, useEffect, use } from "react";
-import { View, Text, StatusBar } from 'react-native';
+import { View, Text, StatusBar, ActivityIndicator } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomPanel from '@/components/bottom-panel/bottom-panel'; 
@@ -10,6 +10,7 @@ import { formatEventDateTime } from "@/scripts/helpers";
 // import { } from 'expo-router';
 
 const HAMILTON = { latitude: 43.2557, longitude: -79.8711, latitudeDelta: 0.04, longitudeDelta: 0.04 };
+const eventLimit = 20;
 
 export default function MapScreen() {
   const [range, setRange] = useState<[number, number]>([10, 70]);
@@ -19,9 +20,10 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const eventLimit = 20;
 
-  // this will fetch venues from the backend when the page is loaded or range changes
+  // fetch events when:
+  // - screen first mounds
+  // - range changes
   useEffect(() => {
     const controller = new AbortController();
     let isMounted = true;
@@ -102,6 +104,30 @@ export default function MapScreen() {
     
         {/* Bottom panel */}
         <BottomPanel range={range} setRange={setRange} />
+
+        {/* Loading overlay */}
+        {loading && (
+          <View className="absolute inset-0 justify-center items-center bg-black/40">
+            <ActivityIndicator size="large" />
+            <Text className="text-white mt-2">Loading events...</Text>
+          </View>
+        )}
+
+        {/* Error banner */}
+        {error && !loading && (
+          <View className="absolute inset-x-4 top-5 rounded-lg bg-red-800/90 px-3 py-2">
+            <Text className="text-white text-center text-sm">{error}</Text>
+          </View>
+        )}
+
+        {/* No results banner */}
+        {!loading && !error && events.length === 0 && (
+          <View className="absolute inset-x-4 top-5 rounded-lg bg-black/70 px-3 py-2">
+            <Text className="text-white text-center text-sm">
+              No events found for this price range.
+            </Text>
+          </View>
+        )}
       </View>
       
     </SafeAreaView>

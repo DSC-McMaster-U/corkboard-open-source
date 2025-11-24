@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Image, StatusBar } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, StatusBar, ActivityIndicator } from 'react-native';
 import { FontAwesome } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import EventModal from '@/components/event-modal';
@@ -175,6 +175,29 @@ export default function EventsScreen() {
       
       {/* Bottom panel */}
         <BottomPanel range={range} setRange={setRange}/>
+        {/* Loading overlay */}
+        {loading && (
+          <View className="absolute inset-0 justify-center items-center bg-black/40">
+            <ActivityIndicator size="large" />
+            <Text className="text-white mt-2">Loading events...</Text>
+          </View>
+        )}
+
+        {/* Error banner */}
+        {error && !loading && (
+          <View className="absolute inset-x-4 top-5 rounded-lg bg-red-800/90 px-3 py-2">
+            <Text className="text-white text-center text-sm">{error}</Text>
+          </View>
+        )}
+
+        {/* No results banner */}
+        {!loading && !error && eventList.length === 0 && (
+          <View className="absolute inset-x-4 top-5 rounded-lg bg-black/70 px-3 py-2">
+            <Text className="text-white text-center text-sm">
+              No events found for this price range.
+            </Text>
+          </View>
+        )}
       </View>
     </SafeAreaView>
 
