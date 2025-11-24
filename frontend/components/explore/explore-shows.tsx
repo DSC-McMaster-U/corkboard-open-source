@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { router } from 'expo-router';
 import { EventData, EventList } from '@/constants/types';
-import { apiFetch } from '@/api/api';
+import { apiFetch, getImageUrl } from '@/api/api';
 
 interface ShowCardProps {
   show: EventData;
 }
 
 function ShowCard({ show }: ShowCardProps) {
+  const PLACEHOLDER_IMAGE = "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b";
+  const imageUri = show.image ? getImageUrl(show.image) : PLACEHOLDER_IMAGE;
+
   const handlePress = () => {
     router.push({
       pathname: '/shows/[showName]',
@@ -26,14 +29,14 @@ function ShowCard({ show }: ShowCardProps) {
     });
   };
 
-  console.log(show)
-
   return (
     <TouchableOpacity className='w-36 mr-4' onPress={handlePress}>
-      <View 
-        className='rounded-2xl h-36 w-36 mb-2 justify-center items-center overflow-hidden'
-        style={{ backgroundColor: '#B8856A' }}
-      >
+      <View className="rounded-2xl h-36 w-36 mb-2 overflow-hidden bg-neutral-300">
+        <Image
+          source={{ uri: imageUri }}
+          className="h-full w-full"
+          resizeMode="cover"
+        />
       </View>
       <Text className='text-foreground font-semibold text-sm' numberOfLines={1}>
         {show.title}
