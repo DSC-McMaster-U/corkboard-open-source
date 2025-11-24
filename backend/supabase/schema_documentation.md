@@ -154,8 +154,8 @@
 
 ## Sample Data
 
-- 4 venues
-- 3 events
+- 7 venues (4 initial + 3 new from real events)
+- 6 events (3 initial + 3 real events from Eventbrite, all in Hamilton)
 - 7 genres
 
 ## Migrations
@@ -169,6 +169,7 @@ All schema changes are tracked in `supabase/migrations/`:
 - `005_add_artist_column_and_event_genres.sql` - Add `artist` column to events, populate event_genres
 - `006_add_image_and_coordinates.sql` - Add `image` column to events, add `latitude`/`longitude` to venues
 - `007_fix_longitude_precision_and_add_venue_coordinates.sql` - Fix longitude precision to DECIMAL(11, 8), add sample venue coordinates
+- `008_add_sample_events_for_showcase.sql` - Add 3 real events from Eventbrite (CLUBMATTIX, LOUD LOVE, Therapy - November) with new venues
 
 **To apply a migration:**
 1. Review migration file
