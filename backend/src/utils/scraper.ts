@@ -121,7 +121,7 @@ export async function insertScrapedEvents(events:
       event.description,
       event.cost,
       "published",
-      "scraper",
+      "scraping",
       event.source_url,
       "success",
       event.artist,
@@ -132,5 +132,9 @@ export async function insertScrapedEvents(events:
 }
 
 if (data?.length) {
-  insertScrapedEvents(data);
+  try {
+    await insertScrapedEvents(data);
+  } catch (err) {
+    console.error("Failed to insert events:", err);
+  }
 }
