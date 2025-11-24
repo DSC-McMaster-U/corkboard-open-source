@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import EventModal from '@/components/event-modal';
 import BottomPanel from '@/components/bottom-panel/bottom-panel'; 
 import type { EventData, EventList } from "@/constants/types";
-import { formatEventDateTimeToDate, formatEventDateTimeToTime } from "@/scripts/helpers";
+import { formatEventDateTimeToDate, formatEventDateTimeToTime } from "@/scripts/formatDateHelper";
 import { apiFetch , getImageUrl } from "@/api/api";
 import { SafeAreaView } from 'react-native-safe-area-context';
 

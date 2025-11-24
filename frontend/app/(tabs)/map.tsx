@@ -6,9 +6,8 @@ import BottomPanel from '@/components/bottom-panel/bottom-panel';
 import EventModal from '@/components/event-modal'; 
 import { apiFetch } from "@/api/api";
 import { EventData, EventList } from "@/constants/types";
-import { formatEventDateTime } from "@/scripts/helpers";
-// import { } from 'expo-router';
-
+import { formatEventDateTime } from "@/scripts/formatDateHelper";
+import { useNavBarVisibility } from "@/scripts/navBarVisibility";
 const HAMILTON = { latitude: 43.2557, longitude: -79.8711, latitudeDelta: 0.04, longitudeDelta: 0.04 };
 const eventLimit = 20;
 
@@ -20,6 +19,11 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { hideNavBar, showNavBar } = useNavBarVisibility();
+  useEffect(() => {
+    if (modalVisible) hideNavBar();
+    else showNavBar();
+  }, [modalVisible]);
 
   // fetch events when:
   // - screen first mounds

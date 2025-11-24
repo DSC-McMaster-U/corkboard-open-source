@@ -1,7 +1,7 @@
 import { Modal, View, Text, TouchableOpacity, Linking, Image, StyleSheet, ScrollView, Pressable, useColorScheme } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { EventData } from "@/constants/types";
-import { formatEventDateTime, formatEventDateTimeToDate, formatEventDateTimeToTime } from "@/scripts/helpers";
+import { formatEventDateTime, formatEventDateTimeToDate, formatEventDateTimeToTime } from "@/scripts/formatDateHelper";
 import { getImageUrl } from "@/api/api";
 import { Colors } from "@/constants/theme";
 
@@ -52,7 +52,7 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
       >
         {/* Sheet container – stop propagation so taps inside don’t close */}
         <Pressable className="w-full justify-end" onPress={() => {}}>
-          <View className="w-full min-h-[75%] rounded-t-3xl overflow-hidden bg-[#3e0000]">
+          <View className="w-full min-h-[75%] rounded-t-3xl rounded-b-lg overflow-hidden bg-[#3e0000]">
             {/* Hero image with overlay + date pill */}
             <View className="w-full h-44 relative overflow-hidden mt-2">
               <Image

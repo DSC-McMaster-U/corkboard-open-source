@@ -6,6 +6,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Ionicons } from '@expo/vector-icons';
+import { navBarStyle } from '@/scripts/navBarStyle';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -23,23 +24,10 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
         tabBarActiveTintColor: theme.tint,
         tabBarInactiveTintColor: theme.tabIconDefault,
-        tabBarStyle: {
-          position: 'absolute',
-          bottom: 10,
-          left: 16,
-          right: 16,
-          height: 64,
-          borderRadius: 24,
-          backgroundColor: colorScheme === 'dark' ? darkBar : lightBar,
-          borderTopWidth: 0,
-          elevation: 8,
-          shadowColor: '#000',
-          shadowOpacity: 0.15,
-          shadowRadius: 8,
-          shadowOffset: { width: 0, height: 3 },
-          paddingBottom: 10,
-          paddingTop: 8,
-        },
+        tabBarStyle: [
+          navBarStyle,
+          { backgroundColor: colorScheme === 'dark' ? darkBar : lightBar },
+        ],
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
