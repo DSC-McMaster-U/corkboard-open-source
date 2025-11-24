@@ -88,7 +88,7 @@ export async function scrapeWebsite(url: string) {
       const cost = 10.00;
       const source_url = url
 
-      results.push({ start_time, description, title, cost, source_url, artist: title, image: "https://corktownpub.ca/wp-content/uploads/2024/12/cropped-cropped-Corktown.jpg" });
+      results.push({ start_time, description, title, cost, source_url, artist: title, image: "/images/events/corktown-pub.jpg" });
     });
 
     return results;
