@@ -1,14 +1,29 @@
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, StatusBar } from 'react-native';
 import { FontAwesome } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EventModal from '@/components/event-modal';
 import BottomPanel from '@/components/bottom-panel/bottom-panel'; 
+import type { EventData, EventList } from "@/constants/types";
+import { formatEventDateTimeToDate, formatEventDateTimeToTime } from "@/scripts/helpers";
+import { apiFetch , getImageUrl } from "@/api/api";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-type InfoBoxType = {show_name: string, artist: string, date: string, time: string, location: string, genre: string, image: string;};
+type InfoBoxProps = {
+  event: EventData;
+  onPress: () => void;
+}
 
-function InfoBox({show_name, artist, date, time, location, genre, image, onPress}: InfoBoxType & { onPress: () => void }) {
+const PLACEHOLDER_IMAGE =
+  "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b";
+
+
+function InfoBox({ event, onPress }: InfoBoxProps) {
+
+  const imageUri = event.image ? getImageUrl(event.image) : PLACEHOLDER_IMAGE;
+
   return (
+
     <TouchableOpacity onPress={onPress}>
       <View
         style={{
@@ -24,41 +39,48 @@ function InfoBox({show_name, artist, date, time, location, genre, image, onPress
         {/* Show Name */}
         <Text
           style={{ position: 'absolute', top: 10, left: 15, fontSize: 18, fontWeight: 'bold', color: 'white'}}>
-          {show_name}
+          {event.title}
         </Text>
 
         {/* Artist */}
         <Text style={{ position: 'absolute', top: 27, left: 15, fontSize: 16, color: 'white'}}>
-          {artist}
+          {event.artist ? event.artist : "Unspecified artist"}
         </Text>
 
         {/* Location */}
         <View style={{ position: 'absolute', bottom: 63, left: 15, flexDirection: 'row', alignItems: 'center' }}>
           <FontAwesome name="map-marker" size={15} color="white" />
-          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{location}</Text>
+          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>
+            {event.venues.name ? event.venues.name : "Unspecified venue"}
+          </Text>
         </View>
 
         {/* Date */}
         <View style={{ position: 'absolute', bottom: 44, left: 13, flexDirection: 'row', alignItems: 'center' }}>
           <FontAwesome name="calendar" size={14} color="white" />
-          <Text style={{fontSize: 14, color: 'white', marginLeft: 5}}>{date}</Text>
+          <Text style={{fontSize: 14, color: 'white', marginLeft: 5}}>{formatEventDateTimeToDate(event.start_time)}</Text>
         </View>
 
         {/* Time */}
         <View style={{ position: 'absolute', bottom: 25, left: 13, flexDirection: 'row', alignItems: 'center'}}>
           <FontAwesome name="clock-o" size={14} color="white" />
-          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{time}</Text>
+          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{formatEventDateTimeToTime(event.start_time)}</Text>
         </View>
 
         {/* Genre */}
         <View style={{ position: 'absolute', bottom: 7, left: 11, flexDirection: 'row', alignItems: 'center' }}>
           <FontAwesome name="music" size={14} color="white" />
-          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6}}>{genre}</Text>
+          <Text style={{ fontSize: 14, color: 'white', marginLeft: 6}}>
+            {event.event_genres && event.event_genres.length > 0
+              ? event.event_genres.map((eg) => eg.genres.name).join(", ")
+              : "Unspecified"
+            }
+          </Text>
         </View>
 
         {/* Photo rectangle */}
         <Image
-          source={{ uri: image }} 
+          source={{ uri: imageUri }} 
           style={{ width: 98, height: 92, borderRadius: 3, position: 'absolute', top: 22, right: 14 }}
         />
       </View>
@@ -73,40 +95,88 @@ export default function EventsScreen() {
   const [range, setRange] = useState<[number, number]>([10, 70]);  // set up state for ticket price slider bar
   const [selectedEvent, setSelectedEvent] = useState<any>(null); // store event object that user clicks
   const [modalVisible, setModalVisible] = useState(false); // modal state to open/close event popup
+  const [eventList, setEvents] = useState<EventData[]>([]); // store events from backend
+  const [loading, setLoading] = useState(true);  // tracks if data is still being fetched
+  const [error, setError] = useState<string | null>(null); // track errors during data fetching
 
-  const eventList = [
-    {show_name: "The Art of Loving", artist: "Olivia Dean", date: "Dec 3", time: "8:00pm", location: "FirstOntario Hall", genre: "Pop", image: "https://hips.hearstapps.com/hmg-prod/images/lead-press-2-68e815b83e780.jpg?crop=1.00xw:0.653xh;0,0.0410xh&resize=1120:*", description: "This is a description."},
-    {show_name: "No Hard Feelings", artist: "The Beaches", date: "Dec 6", time: "8:00pm", location: "TD Coliseum", genre: "Rock", image: "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b", description: "This is a description."},
-    {show_name: "World Tour", artist: "The Neighbourhood", date: "Dec 12", time: "7:00pm", location: "FirstOntario Hall", genre: "Rock", image: "https://media.pitchfork.com/photos/5a9f0c13b848c0268b2016bb/1:1/w_450%2Cc_limit/The%2520Neighbourhood.jpg", description: "This is a description."},
-    {show_name: "Unreal Earth Tour", artist: "Hozier", date: "Dec 13", time: "6:00pm", location: "FirstOntario Hall", genre: "Rock", image: "https://s1.ticketm.net/dam/a/9fe/d6cc61a9-9850-4e4b-9a7e-893c63c629fe_RETINA_PORTRAIT_3_2.jpg", description: "This is a description."},
-    {show_name: "World Tour", artist: "Jonas Brothers", date: "Dec 14", time: "7:00pm", location: "TD Coliseum", genre: "Pop", image: "https://s1.ticketm.net/dam/a/257/0f1a51cd-670d-41ca-bb6f-775ea30f6257_RETINA_PORTRAIT_3_2.jpg", description: "This is a description."}
-  ]
+  const eventLimit = 4;
+
+  useEffect(() => {
+      const controller = new AbortController();
+      let isMounted = true;
+  
+      const fetchEvents = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const res = await apiFetch<EventList>(`api/events?limit=${eventLimit}&min_cost=${range[0]}&max_cost=${range[1]}`,
+            { signal: controller.signal}
+          );
+          if (isMounted) {
+            console.log("Fetched events:", res.events);
+            setEvents(res.events || []);
+          }
+        } catch (err: any) {
+          if (isMounted && err.name !== "AbortError") {
+            setError(err.message || "Failed to fetch events");
+            console.error("Error fetching events:", err);
+          }
+        } finally {
+          if (isMounted) {
+            setLoading(false);
+          }
+        }
+      };
+  
+      // Debounce: wait 300ms after range changes before fetching
+      const timer = setTimeout(fetchEvents, 300);
+  
+      return () => {
+        clearTimeout(timer);
+        controller.abort();
+        isMounted = false;
+      };
+    }, [range]);
+
 
   return (
-    <View className="flex-1 flex-col justify-start items-center bg-[#FFF0E2]">
-      <ScrollView contentContainerStyle={{paddingTop: 120, paddingBottom: 150, alignItems: 'center'}}>
-        {eventList.map((event, index) => (
-          <InfoBox
-            key={index}
-            {...event}
-            onPress={() => {
-              setSelectedEvent(event);
-              setModalVisible(true);
-            }}
-          />
-      ))}
-      </ScrollView>
-      
-      <EventModal
-  visible={modalVisible}
-  onClose={() => setModalVisible(false)}
-  data={selectedEvent}
-/>
-    
-     {/* Bottom panel */}
-      <BottomPanel range={range} setRange={setRange}/>
 
-    </View>
+    <SafeAreaView className='bg-[#AE6E4E] flex-1' edges={['top', 'left', 'right']}>
+      <StatusBar barStyle="light-content" backgroundColor="#411900" />
+
+      {/* Temporary header */}
+      <View className="h-16 px-4 justify-end pb-3 bg-[#AE6E4E]">
+        <View className="flex-row items-center justify-between">
+          <Text className="text-xl font-semibold text-white">Shows near you</Text>
+          <View className="w-8 h-8 rounded-full bg-blue-300" />
+        </View>
+      </View>
+
+      <View className="flex-1 bg-[#FFF0E2]">
+        <ScrollView contentContainerStyle={{paddingTop: 20, paddingBottom: 150, alignItems: 'center'}}>
+          
+          {eventList.map((event) => (
+            <InfoBox
+              key={event.id} 
+              event={event}   
+              onPress={() => {
+                setSelectedEvent(event);
+                setModalVisible(true);
+              }}
+            />
+          ))}
+        </ScrollView>
+        
+        <EventModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          data={selectedEvent}
+        />
+      
+      {/* Bottom panel */}
+        <BottomPanel range={range} setRange={setRange}/>
+      </View>
+    </SafeAreaView>
 
   );
 }
