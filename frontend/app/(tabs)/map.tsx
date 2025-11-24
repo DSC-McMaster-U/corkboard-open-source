@@ -89,21 +89,12 @@ export default function MapScreen() {
                 : getRandomCoordinate(-79.88, 0.01),
             }}
             title={e.title}
-            description={`${formatEventDateTime(e.start_time)} • ${e.description}`}
-          >
-            <Callout
-              onPress={() => {
-                setSelectedEvent(e);
-                setModalVisible(true);
-              }}
-            >
-              <View style={{ width: 130 }}>
-                <Text style={{ fontWeight: "600" }}>{e.title}</Text>
-                <Text>{e.artist ? e.artist : "Unspecified artist."}</Text>
-                <Text style={{ marginTop: 6, textDecorationLine: "underline" }}>More details</Text>
-              </View>
-            </Callout>
-          </Marker>
+            // description={`${formatEventDateTime(e.start_time)} • ${e.description}`}
+            onPress={() => {
+              setSelectedEvent(e);
+              setModalVisible(true);
+            }}
+          />
           ))}
         </MapView>
 
