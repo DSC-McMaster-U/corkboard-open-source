@@ -1,25 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { router } from 'expo-router';
-import { EventData } from '@/constants/types';
+import { EventData, EventList } from '@/constants/types';
+import { apiFetch } from '@/api/api';
 
 interface ShowCardProps {
   show: EventData;
-}
-
-const getShows = async () => {
-  try {
-    const response = await fetch('http://localhost:3000/api/events?limit=10');
-  
-    if (!response.ok) throw new Error("Error fetching data.")
-
-    const data = await response.json();
-    return data.events; 
-
-  } catch (e) {
-    console.error((e as Error).message)
-    return [];
-  }
 }
 
 function ShowCard({ show }: ShowCardProps) {
@@ -62,31 +48,62 @@ function ShowCard({ show }: ShowCardProps) {
 export function ExploreShows() {
   const [shows, setShows] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<string | null>(null);
 
   // fetching event data from backend
-  useEffect(() =>  { 
-    const fetchData = async () => {
-      setLoading(true)
-      const data: EventData[] = await getShows();
-      if (data) setShows(data);
-      else setError(true)
-    }
+  const eventLimit = 8;
+  
+  useEffect(() => {
+    const controller = new AbortController();
+    let isMounted = true;
 
-    fetchData();
-    setLoading(false)
+    const fetchEvents = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await apiFetch<EventList>(`api/events?limit=${eventLimit}`,
+          { signal: controller.signal}
+        );
+        if (isMounted) {
+          console.log("Fetched events:", res.events);
+          setShows(res.events || []);
+        }
+      } catch (err: any) {
+        if (isMounted && err.name !== "AbortError") {
+          setError(err.message || "Failed to fetch events");
+          console.error("Error fetching events:", err);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    // Debounce: wait 300ms after range changes before fetching
+    const timer = setTimeout(fetchEvents, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+      isMounted = false;
+    };
   }, []);
 
   if (loading) {
     return (
-    <div>This component is loading.</div>
-    )
+      <View className="px-4 py-2">
+        <Text>This component is loading.</Text>
+      </View>
+    );
   }
 
   if (error) {
     return (
-    <div>This component has an error.</div>
-    )
+      <View className="px-4 py-2">
+        <Text>{`This component has an error: ${error}`}</Text>
+      </View>
+    );
   }
 
   return (
