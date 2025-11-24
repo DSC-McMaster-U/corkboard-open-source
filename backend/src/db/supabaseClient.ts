@@ -57,7 +57,7 @@ export const db = {
                 artist,
                 image
             }),
-    }
+    }, 
     
     venues: {
         getAll: (limit = 10) =>

@@ -7,7 +7,7 @@
 
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { eventService } from "../services/eventService.js";
+// import { eventService } from "../services/eventService.js";
 
 export async function scrapeWebsite(url: string) {
   try {
@@ -22,10 +22,11 @@ export async function scrapeWebsite(url: string) {
     const cheerioObj = cheerio.load(html);
 
     //typescript moment
-    const results: { start_time: Date,
-      description: string, 
-      title: string, 
-      cost: number, 
+    const results: {
+      start_time: Date,
+      description: string,
+      title: string,
+      cost: number,
       source_url: string,
       artist: string,
       image: string,
@@ -50,13 +51,11 @@ export async function scrapeWebsite(url: string) {
       let [hourStr, minStr] = rawTime.split(":");
       if (!hourStr || !minStr) return;
 
-      if (minStr.includes("pm")) {
-        if (minStr.includes("12"))
-          hourStr = "0";
-        else {
-          let hourTemp = Number(hourStr) + 12;
-          hourStr = String(hourTemp);
-        }
+      if (minStr.includes("12") && minStr.includes("am"))
+        hourStr = "0";
+      else if (minStr.includes("pm") && !minStr.includes("12")) {
+        let hourTemp = Number(hourStr) + 12;
+        hourStr = String(hourTemp);
       }
 
       minStr = minStr.replace(/(am|pm)/, "");
@@ -70,7 +69,7 @@ export async function scrapeWebsite(url: string) {
       // construct start_time from date 
       let parts = rawDate.split(" ");
       let dd = parts[2]?.replace(/\D+/g, "") ?? 0;
-      if (!dd) return;
+      // if (!dd) continue;
       let yyyy = new Date().getFullYear();
 
       const monthDict = {
@@ -81,7 +80,7 @@ export async function scrapeWebsite(url: string) {
       };
       const month = parts[1]?.toUpperCase() as keyof typeof monthDict;
       let mm = monthDict[month];
-      if (mm === undefined) return;
+      // if (mm === undefined) return;
 
       const start_time = new Date(Date.UTC(yyyy, mm, Number(dd), Number(hourStr), Number(minStr), 0));
 
@@ -89,7 +88,7 @@ export async function scrapeWebsite(url: string) {
       const cost = 10.00;
       const source_url = url
 
-      results.push({ start_time, description, title, cost, source_url, artist: title, image: "https://corktownpub.ca/wp-content/uploads/2024/12/cropped-cropped-Corktown.jpg"});
+      results.push({ start_time, description, title, cost, source_url, artist: title, image: "https://corktownpub.ca/wp-content/uploads/2024/12/cropped-cropped-Corktown.jpg" });
     });
 
     return results;
@@ -104,31 +103,34 @@ const data = await scrapeWebsite("https://corktownpub.ca/on-the-stage/");
 console.log(data);
 
 //still need to check if events already exist before inserting
-export async function insertScrapedEvents(events: 
-    {start_time: Date,
-      description: string, 
-      title: string, 
-      cost: number, 
-      source_url: string,
-      artist: string,
-      image: string,
-    }[]
-  ) {
+export async function insertScrapedEvents(events:
+  {
+    start_time: Date,
+    description: string,
+    title: string,
+    cost: number,
+    source_url: string,
+    artist: string,
+    image: string,
+  }[]
+) {
   for (const event of events) {
-      await eventService.addEvent(event.title,
-        "corktown-venue-id", // IMPORTANT replace with actual venue ID
-        event.start_time.toISOString(),
-        event.description,
-        event.cost,
-        "published",
-        "scraper",
-        event.source_url,
-        "success",
-        event.artist,
-        event.image
-      );
-      console.log(`Inserted event: ${event.title}`);
+    await eventService.addEvent(event.title,
+      "204cc1c3-e141-4ba1-9e3f-bde3763149d2", 
+      event.start_time.toISOString(),
+      event.description,
+      event.cost,
+      "published",
+      "scraper",
+      event.source_url,
+      "success",
+      event.artist,
+      event.image
+    );
+    console.log(`Inserted event: ${event.title}`);
   }
 }
 
-insertScrapedEvents(data);
+if (data?.length) {
+  insertScrapedEvents(data);
+}
