@@ -19,7 +19,7 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const eventLimit = 4;
+  const eventLimit = 20;
 
   // this will fetch venues from the backend when the page is loaded or range changes
   useEffect(() => {
