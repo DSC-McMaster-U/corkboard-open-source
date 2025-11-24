@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
-//import { shows } from '@/constants/mock-data';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { router } from 'expo-router';
-import { Show } from '@/lib/types';
+import { EventData } from '@/constants/types';
 
 interface ShowCardProps {
-  show: Show;
+  show: EventData;
 }
 
 const getShows = async () => {
@@ -29,12 +28,19 @@ function ShowCard({ show }: ShowCardProps) {
       pathname: '/shows/[showName]',
       params: {
         showName: show.title,
+        artist: show.artist,
         description: show.description,
         start_time: show.start_time,
-        cost: show.cost
-      }
+        cost: show.cost,
+        image: show.image,
+        venue_name: show.venues?.name,
+        venue_address: show.venues?.address,
+        source_url: show.source_url
+      },
     });
   };
+
+  console.log(show)
 
   return (
     <TouchableOpacity className='w-36 mr-4' onPress={handlePress}>
@@ -54,7 +60,7 @@ function ShowCard({ show }: ShowCardProps) {
 }
 
 export function ExploreShows() {
-  const [shows, setShows] = useState<Show[]>([]);
+  const [shows, setShows] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false)
 
@@ -62,7 +68,7 @@ export function ExploreShows() {
   useEffect(() =>  { 
     const fetchData = async () => {
       setLoading(true)
-      const data: Show[] = await getShows();
+      const data: EventData[] = await getShows();
       if (data) setShows(data);
       else setError(true)
     }
@@ -90,7 +96,7 @@ export function ExploreShows() {
         showsHorizontalScrollIndicator={false}
         className='flex-row'
       >
-        {shows && shows.map((show: Show, index: number) => (
+        {shows && shows.map((show: EventData, index: number) => (
           <ShowCard
             key={index}
             show={show}
