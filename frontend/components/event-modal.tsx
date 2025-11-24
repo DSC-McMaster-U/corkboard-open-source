@@ -51,8 +51,8 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
         onPress={onClose}
       >
         {/* Sheet container – stop propagation so taps inside don’t close */}
-        <Pressable className="w-full flex-1 justify-center" onPress={() => {}}>
-          <View className="w-full h-[85%] rounded-t-3xl overflow-hidden bg-[#3e0000]">
+        <Pressable className="w-full flex-1 justify-end" onPress={() => {}}>
+          <View className="w-full min-h-[75%] rounded-t-3xl overflow-hidden bg-[#3e0000]">
             {/* Handle */}
             <View className="pt-2 pb-1 items-center">
               <View className="w-10 h-1.5 rounded-full bg-neutral-400" />
@@ -86,7 +86,7 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
                   {data.title}
                 </Text>
                 <Text
-                  className="mt-0.5 text-base text-neutral-200"
+                  className="text-lg mt-0.5 text-neutral-200"
                   numberOfLines={1}
                 >
                   {data.artist || "Unspecified artist"}
@@ -98,14 +98,14 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
                 <FontAwesome name="map-marker" size={16} color="#f97316" />
                 <View className="ml-2 flex-1">
                   <Text
-                    className="text-sm font-medium text-neutral-100"
+                    className="font-medium text-neutral-100"
                     numberOfLines={1}
                   >
                     {venue?.name || "Unspecified venue"}
                   </Text>
                   {venue?.address && (
                     <Text
-                      className="text-xs mt-0.5 text-neutral-200"
+                      className="text-sm mt-0.5 text-neutral-200"
                       numberOfLines={1}
                     >
                       {venue.address}
@@ -117,16 +117,16 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
               {/* Ticket price */}
               <View className="flex-row items-center mt-2">
                 <FontAwesome name="ticket" size={16} color="#f97316" />
-                <Text className="ml-2 text-sm font-medium text-neutral-100">
+                <Text className="ml-2 font-medium text-neutral-100">
                   Ticket Price: {costText}
                 </Text>
               </View>
 
               {/* Genres */}
-              <View className="flex-row items-center mt-2">
+              <View className="flex-row items-center my-2">
                 <FontAwesome name="music" size={16} color="#f97316" />
                 <Text
-                  className="ml-2 text-sm font-medium flex-1 text-neutral-100"
+                  className="ml-2 font-medium flex-1 text-neutral-100"
                   numberOfLines={1}
                 >
                   {genresText}
@@ -134,12 +134,12 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
               </View>
 
               {/* Description box */}
-              <View className="mt-3 rounded-2xl bg-[#FFF4EA] px-3 py-2 max-h-40">
+              <View className="mt-3 rounded-2xl bg-[#FFF4EA] px-3 py-2 max-h-[50%]">
                 <ScrollView>
-                  <Text className="text-xs font-semibold text-[#5b3b24] mb-1">
+                  <Text className="text-sm font-semibold text-[#5b3b24] mb-1">
                     Event details
                   </Text>
-                  <Text className="text-xs text-[#3b2717] leading-5">
+                  <Text className="text-sm text-[#3b2717] leading-5">
                     {descriptionText}
                   </Text>
                 </ScrollView>
