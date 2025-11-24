@@ -34,13 +34,13 @@ function InfoBox({ event, onPress }: InfoBoxProps) {
             <Text className='text-white text-lg font-bold' numberOfLines={2}>
               {event.title}
             </Text>
-            <Text className='text-neutral-200 text-base mt-0.5' numberOfLines={1}>
+            <Text className='text-neutral-200 text-base mt-0' numberOfLines={1}>
               {artist}
             </Text>
           </View>
 
           {/* Venue */}
-          <View className='flex-row items-center mt-1'>
+          <View className='flex-row items-center mt-0.5'>
             <FontAwesome name="map-marker" size={14} color="#fff" />
             <Text className='text-white text-sm ml-1.5' numberOfLines={1}>
               {venueName}
@@ -48,7 +48,7 @@ function InfoBox({ event, onPress }: InfoBoxProps) {
           </View>
 
           {/* Date + time chips */}
-          <View className="flex-row items-center mt-1">
+          <View className="flex-row items-center mt-0.5">
             <View className="flex-row items-center bg-white/10 rounded-full px-2 py-0.5 mr-1.5">
               <FontAwesome name="calendar" size={11} color="#fff" />
               <Text className="text-white text-xs ml-1">
@@ -75,6 +75,16 @@ function InfoBox({ event, onPress }: InfoBoxProps) {
               </Text>
             </View>
           </View>
+
+          {/* Ticket price */}
+          {event.cost !== undefined && (
+            <View className="flex-row items-center mt-1">
+              <FontAwesome name="ticket" size={11} color="#fff" />
+              <Text className="text-white text-xs ml-1">
+                ${event.cost.toFixed(2)}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* right side - image */}
@@ -201,7 +211,16 @@ export default function EventsScreen() {
       </View>
 
       <View className="flex-1 bg-[#FFF0E2]">
-        <ScrollView contentContainerStyle={{paddingTop: 20, paddingBottom: 150 }}>
+        <View className="px-4 py-2 bg-[#FFF0E2] pt-2">
+          <View className="self-start bg-[#E3C9AF] px-3 py-1 rounded-full">
+            <Text className="text-[12px] font-semibold text-[#411900]">
+              {`Showing ${eventList.length} ${eventList.length === 1 ? "event" : "events"}`}{' '}
+              <Text className="text-[#6a3f1d]">{`· $${range[0]}–$${range[1]}`}</Text>
+            </Text>
+          </View>
+        </View>
+
+        <ScrollView contentContainerStyle={{paddingTop: 4, paddingBottom: 120 }}>
           {eventList.map((event) => (
             <InfoBox
               key={event.id} 
