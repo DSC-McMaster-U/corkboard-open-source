@@ -21,40 +21,57 @@ export async function scrapeWebsite(url: string) {
     const cheerioObj = cheerio.load(html);
 
     //typescript moment
-    const results: { date: string; stage: string, band: string }[] = [];
+    const results: { start_time: Date; stage: string, band: string }[] = [];
 
     cheerioObj("h4").each((_, el) => {
       // h4 element is the time, and then go up a div, go to the next and the strong is the stage and time
       const outerDiv = cheerioObj(el).parent().parent();
       const rawDate = cheerioObj(el).text().trim();
-      const stage = outerDiv.next("div").find("strong").first().text().trim();
+      // const stage = outerDiv.next("div").find("strong").first().text().trim();
+      // const stage = "";
+      let rawTimeAndStage = outerDiv.next("div").find("strong").first().text().trim();
+      let timeAndStage = rawTimeAndStage.split(" – ");
+      const stage = timeAndStage[1] ?? ""
+
+      
+      const rawTime = timeAndStage[0] ?? "";
+      if (!rawTime) return;
+      let [hourStr, minStr] = rawTime.split(":");
+      if (!hourStr || !minStr) return;
+
+      if (minStr.includes("pm")) {
+        hourStr = hourStr + 12;
+      }
+
+      minStr = minStr.replace(/(am|pm)/, "");
+
 
       // it is important to use the character U+2013 "–" in the regex, and not the regular hyphen "-"
       var tempBand = outerDiv.next("div").first().text().trim();
-      var regex = new RegExp(`^${stage} – `);
+      var regex = new RegExp(`^${rawTimeAndStage} – `);
       const band = tempBand.replace(regex, "").trim()
 
       // construct start_time from date 
       let parts = rawDate.split(" ");
-      let dd = parts[2]?.replace(/\D+/g, "");;
-      if (!dd) return; 
-      dd = dd.padStart(2, "0");
+      let dd = parts[2]?.replace(/\D+/g, "") ?? 0;
+      if (!dd) return;
+      // dd = dd.padStart(2, "0");
       let yyyy = new Date().getFullYear();
 
       const monthDict = {
-        'JANUARY': '01', 'FEBRUARY': '02', 'MARCH': '03',
-        'APRIL': '04', 'MAY': '05', 'JUNE': '06',
-        'JULY': '07', 'AUGUST': '08', 'SEPTEMBER': '09',
-        'OCTOBER': '10', 'NOVEMBER': '11', 'DECEMBER': '12'
+        'JANUARY': 0, 'FEBRUARY': 1, 'MARCH': 2,
+        'APRIL': 3, 'MAY': 4, 'JUNE': 5,
+        'JULY': 6, 'AUGUST': 7, 'SEPTEMBER': 8, 
+        'OCTOBER': 9, 'NOVEMBER': 10, 'DECEMBER': 11
       };
       const month = parts[1]?.toUpperCase() as keyof typeof monthDict;
       let mm = monthDict[month];
-      if (!mm) return; 
+      if (!mm) return;
 
-      const date = yyyy + "-" + mm + "-" + dd;
+      const start_time = new Date(Date.UTC(yyyy, mm, Number(dd), Number(hourStr), Number(minStr), 0));
 
 
-      results.push({ date, stage, band });
+      results.push({ start_time, stage, band });
     });
 
     return results;
