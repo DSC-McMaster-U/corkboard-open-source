@@ -7,6 +7,7 @@
 
 import axios from "axios";
 import * as cheerio from "cheerio";
+import { eventService } from "../services/eventService.js";
 
 export async function scrapeWebsite(url: string) {
   try {
@@ -101,3 +102,33 @@ export async function scrapeWebsite(url: string) {
 
 const data = await scrapeWebsite("https://corktownpub.ca/on-the-stage/");
 console.log(data);
+
+//still need to check if events already exist before inserting
+export async function insertScrapedEvents(events: 
+    {start_time: Date,
+      description: string, 
+      title: string, 
+      cost: number, 
+      source_url: string,
+      artist: string,
+      image: string,
+    }[]
+  ) {
+  for (const event of events) {
+      await eventService.addEvent(event.title,
+        "corktown-venue-id", // IMPORTANT replace with actual venue ID
+        event.start_time.toISOString(),
+        event.description,
+        event.cost,
+        "published",
+        "scraper",
+        event.source_url,
+        "success",
+        event.artist,
+        event.image
+      );
+      console.log(`Inserted event: ${event.title}`);
+  }
+}
+
+insertScrapedEvents(data);
