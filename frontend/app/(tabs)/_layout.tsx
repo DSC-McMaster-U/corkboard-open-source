@@ -14,6 +14,8 @@ export default function TabLayout() {
   const lightBar = '#F5E2D2';
   const darkBar  = '#111111';
 
+  const size = 26;
+
   return (
     <Tabs
       screenOptions={{
@@ -30,8 +32,8 @@ export default function TabLayout() {
           borderRadius: 24,
           backgroundColor: colorScheme === 'dark' ? darkBar : lightBar,
           borderTopWidth: 0,
-          elevation: 8,              // Android shadow
-          shadowColor: '#000',       // iOS shadow
+          elevation: 8,
+          shadowColor: '#000',
           shadowOpacity: 0.15,
           shadowRadius: 8,
           shadowOffset: { width: 0, height: 3 },
@@ -55,7 +57,7 @@ export default function TabLayout() {
         options={{
           title: 'Explore',
           tabBarIcon: ({ color }) => (
-            <Ionicons size={22} name="search" color={color} />
+            <Ionicons size={size} name="search" color={color} />
           ),
         }}
       />
@@ -64,7 +66,7 @@ export default function TabLayout() {
         options={{
           title: 'Events',
           tabBarIcon: ({ color }) => (
-            <Ionicons size={22} name="calendar" color={color} />
+            <Ionicons size={size} name="calendar" color={color} />
           ),
         }}
       />
@@ -73,7 +75,7 @@ export default function TabLayout() {
         options={{
           title: 'Map',
           tabBarIcon: ({ color }) => (
-            <Ionicons size={22} name="map" color={color} />
+            <Ionicons size={size} name="map" color={color} />
           ),
         }}
       />
