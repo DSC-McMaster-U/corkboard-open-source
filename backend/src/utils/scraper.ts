@@ -7,7 +7,7 @@
 
 import axios from "axios";
 import * as cheerio from "cheerio";
-// import { eventService } from "../services/eventService.js";
+import { eventService } from "../services/eventService.js";
 
 export async function scrapeWebsite(url: string) {
   try {
