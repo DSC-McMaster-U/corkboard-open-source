@@ -21,7 +21,14 @@ export async function scrapeWebsite(url: string) {
     const cheerioObj = cheerio.load(html);
 
     //typescript moment
-    const results: { start_time: Date; description: string, title: string }[] = [];
+    const results: { start_time: Date,
+      description: string, 
+      title: string, 
+      cost: number, 
+      source_url: string,
+      artist: string,
+      image: string,
+    }[] = [];
 
     cheerioObj("h4").each((_, el) => {
       // h4 element is the time, and then go up a div, go to the next and the strong is the stage and time
@@ -77,7 +84,11 @@ export async function scrapeWebsite(url: string) {
 
       const start_time = new Date(Date.UTC(yyyy, mm, Number(dd), Number(hourStr), Number(minStr), 0));
 
-      results.push({ start_time, description, title });
+      // No price on the website, so set a dummy price for now!
+      const cost = 10.00;
+      const source_url = url
+
+      results.push({ start_time, description, title, cost, source_url, artist: title, image: "https://corktownpub.ca/wp-content/uploads/2024/12/cropped-cropped-Corktown.jpg"});
     });
 
     return results;
