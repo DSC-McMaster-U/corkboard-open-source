@@ -17,6 +17,22 @@ router.get("/", async (req: Request, res: Response) => {
     }
 });
 
+// GET /api/venues?venueId= - Get venue by ID
+router.get("/", async (req: Request, res: Response) => {
+    try {
+        const venueId = req.query.venueId as string; 
+
+        if (!venueId) {
+            return res.status(400).json({ error: "Missing 'venueID' query parameter" });
+        }
+
+        const venue = await venueService.getVenueById(venueId);
+        res.json({ venue });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 router.post("/", async (req: Request, res: Response) => {
     // Handle Input
     const {
