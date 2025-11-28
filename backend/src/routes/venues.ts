@@ -7,30 +7,17 @@ const router = express.Router();
 // GET /api/venues - Get all venues
 router.get("/", async (req: Request, res: Response) => {
     try {
-        const limit = req.query.limit
-            ? parseInt(req.query.limit as string)
-            : 10;
-        const venues = await venueService.getAllVenues(limit);
-        res.json({ venues: venues, count: venues.length });
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
-});
+        const { venueId, limit } = req.query;
 
-// GET /api/venues?venueId= - Get venue by ID
-router.get("/", async (req: Request, res: Response) => {
-    try {
-        const venueId = req.query.venueId as string;
-
-        if (!venueId) {
-            res.status(400).json({
-                error: "Missing 'venueID' query parameter",
-            });
-            return;
+        if (venueId) {
+            const venue = await venueService.getVenueById(venueId as string);
+            return res.json({ venue });
         }
 
-        const venue = await venueService.getVenueById(venueId);
-        res.json({ venue: venue });
+        const limitNum = limit ? parseInt(limit as string) : 10;
+        const venues = await venueService.getAllVenues(limitNum);
+
+        res.json({ venues: venues, count: venues.length });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
@@ -42,6 +29,8 @@ router.post("/", async (req: Request, res: Response) => {
         name = undefined,
         venue_type = undefined,
         address = undefined,
+        latitude = undefined,
+        longitude = undefined,
     } = req.body;
 
     if (name == undefined) {
@@ -51,7 +40,7 @@ router.post("/", async (req: Request, res: Response) => {
 
     // Call Service
     venueService
-        .createVenue(name, venue_type, address)
+        .createVenue(name, venue_type, address, latitude, longitude)
         .then((_) => {
             res.status(200).json({ success: true });
         })
