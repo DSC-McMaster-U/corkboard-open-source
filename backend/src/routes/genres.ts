@@ -1,6 +1,7 @@
 import express from "express";
 import type { Request, Response } from "express";
 import { genresService } from "../services/genresService.js";
+import { titleCaseStr } from "../utils/parser.js";
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ router.get("/", async (req: Request, res: Response) => {
         const name = req.query.name as string | undefined;
 
         if (name != undefined) {
-            const genre = await genresService.getByName(name);
+            const genre = await genresService.getByName(titleCaseStr(name));
             res.json({ genre: genre });
             return;
         }
