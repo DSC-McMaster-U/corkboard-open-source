@@ -7,11 +7,12 @@ const router = express.Router();
 // GET /api/venues - Get all venues
 router.get("/", async (req: Request, res: Response) => {
     try {
-        const { venueId, limit } = req.query;
+        const { id = undefined, limit = undefined } = req.query;
 
-        if (venueId) {
-            const venue = await venueService.getVenueById(venueId as string);
-            return res.json({ venue });
+        if (id != undefined) {
+            const venue = await venueService.getVenueById(id as string);
+            res.json({ venue: venue });
+            return;
         }
 
         const limitNum = limit ? parseInt(limit as string) : 10;

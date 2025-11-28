@@ -9,7 +9,7 @@ router.get("/", async (req: Request, res: Response) => {
     try {
         const name = req.query.name as string | undefined;
 
-        if (name) {
+        if (name != undefined) {
             const genre = await genresService.getByName(name);
             res.json({ genre: genre });
             return;
