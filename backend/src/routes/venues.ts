@@ -11,7 +11,7 @@ router.get("/", async (req: Request, res: Response) => {
             ? parseInt(req.query.limit as string)
             : 10;
         const venues = await venueService.getAllVenues(limit);
-        res.json({ venues, count: venues.length });
+        res.json({ venues: venues, count: venues.length });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
@@ -20,14 +20,17 @@ router.get("/", async (req: Request, res: Response) => {
 // GET /api/venues?venueId= - Get venue by ID
 router.get("/", async (req: Request, res: Response) => {
     try {
-        const venueId = req.query.venueId as string; 
+        const venueId = req.query.venueId as string;
 
         if (!venueId) {
-            return res.status(400).json({ error: "Missing 'venueID' query parameter" });
+            res.status(400).json({
+                error: "Missing 'venueID' query parameter",
+            });
+            return;
         }
 
         const venue = await venueService.getVenueById(venueId);
-        res.json({ venue });
+        res.json({ venue: venue });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }

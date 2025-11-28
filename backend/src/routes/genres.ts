@@ -8,24 +8,25 @@ const router = express.Router();
 router.get("/", async (req: Request, res: Response) => {
     try {
         const genres = await genresService.getAll();
-        res.json({ genres, count: genres.length });
+        res.json({ genres: genres, count: genres.length });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
-
 });
 
 // GET /api/genres?name="Name" - Get genre by name
 router.get("/", async (req: Request, res: Response) => {
     try {
-        const name = req.query.name as string; 
+        const name = req.query.name as string;
 
         if (!name) {
-            return res.status(400).json({ error: "Missing 'name' query parameter" });
+            return res
+                .status(400)
+                .json({ error: "Missing 'name' query parameter" });
         }
-        
-        const genre = await genresService.getByName(name); 
-        return res.json({ genre });
+
+        const genre = await genresService.getByName(name);
+        return res.json({ genre: genre });
     } catch (error: any) {
         return res.status(500).json({ error: error.message });
     }
@@ -33,7 +34,7 @@ router.get("/", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
     // Handle Input
-    const {name = undefined} = req.body;
+    const { name = undefined } = req.body;
 
     if (name == undefined) {
         res.status(400).json({ error: "Name is missing" });
@@ -51,6 +52,5 @@ router.post("/", async (req: Request, res: Response) => {
             res.status(500).json({ success: false, error: err });
         });
 });
-
 
 export default router;
