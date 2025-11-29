@@ -42,6 +42,18 @@ type Event = {
 
 let createdIds: Array<string> = [];
 
+const logId = (response: any) => {
+    if (response.body == undefined) {
+        return;
+    }
+
+    if (response.body.id == undefined) {
+        return;
+    }
+
+    createdIds.push(response.body.id);
+};
+
 describe("GET /api/events/", () => {
     let path = "/api/events";
 
@@ -249,9 +261,7 @@ describe("POST /api/events/", () => {
                 start_time: new Date().toISOString(),
             });
 
-        if (response.body.id != undefined) {
-            createdIds.push(response.body.id);
-        }
+        logId(response);
 
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe("Title is missing");
@@ -266,9 +276,7 @@ describe("POST /api/events/", () => {
                 start_time: new Date().toISOString(),
             });
 
-        if (response.body.id != undefined) {
-            createdIds.push(response.body.id);
-        }
+        logId(response);
 
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe("Venue ID is missing");
@@ -283,9 +291,7 @@ describe("POST /api/events/", () => {
                 venue_id: "123e4567-e89b-12d3-a456-426614174000",
             });
 
-        if (response.body.id != undefined) {
-            createdIds.push(response.body.id);
-        }
+        logId(response);
 
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe("Start time is missing");
@@ -303,9 +309,7 @@ describe("POST /api/events/", () => {
                 start_time: invalidDate.toISOString(),
             });
 
-        if (response.body.id != undefined) {
-            createdIds.push(response.body.id);
-        }
+        logId(response);
 
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe("Invalid start time");
@@ -324,9 +328,7 @@ describe("POST /api/events/", () => {
                 status: "active",
             });
 
-        if (response.body.id != undefined) {
-            createdIds.push(response.body.id);
-        }
+        logId(response);
 
         expect(response.statusCode).toBe(500);
         expect(response.body.success).toBe(false);
@@ -349,14 +351,12 @@ describe("POST /api/events/", () => {
             .set("Authorization", bypassUserToken)
             .send(eventBody);
 
+        logId(response);
+
         expect(response.statusCode).toBe(200);
         expect(response.body.success).toBe(true);
 
         eventId = response.body.id;
-
-        if (eventId != undefined) {
-            createdIds.push(eventId);
-        }
 
         let inserted = await db.events.getById(eventId!);
 

@@ -6,6 +6,18 @@ import { db } from "../db/supabaseClient.js";
 
 let createdIds: Array<string> = [];
 
+const logId = (response: any) => {
+    if (response.body == undefined) {
+        return;
+    }
+
+    if (response.body.id == undefined) {
+        return;
+    }
+
+    createdIds.push(response.body.id);
+};
+
 describe("POST /api/venues", () => {
     let path = "/api/venues";
 
@@ -17,14 +29,10 @@ describe("POST /api/venues", () => {
             longitude: 0,
         });
 
-        let body = response.body;
-
-        if (body.id != undefined) {
-            createdIds.push(body.id);
-        }
+        logId(response);
 
         expect(response.status).toBe(400);
-        expect(body.error).toBe("Name is missing");
+        expect(response.body.error).toBe("Name is missing");
     });
 
     it("should return 200 for a valid request", async () => {
@@ -38,15 +46,11 @@ describe("POST /api/venues", () => {
 
         let response = await request(app).post(path).send(venue);
 
-        let body = response.body;
-
-        if (body.id != undefined) {
-            createdIds.push(body.id);
-        }
+        logId(response);
 
         expect(response.status).toBe(200);
-        expect(body.success).toBe(true);
-        expect(body.id).toBeDefined();
+        expect(response.body.success).toBe(true);
+        expect(response.body.id).toBeDefined();
 
         let venueInDb = await request(app).get(path + `?id={body.id}`);
 
