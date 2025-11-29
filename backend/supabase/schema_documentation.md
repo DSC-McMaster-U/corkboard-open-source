@@ -152,6 +152,16 @@
 - **Column:** `venue_id`
 - **Purpose:** Optimize venue-event joins
 
+### `idx_user_bookmarks_user_id`
+- **Table:** `user_bookmarks`
+- **Column:** `user_id`
+- **Purpose:** Optimize bookmark queries by user (used by `getByUserId()`, `exists()`, `delete()`)
+
+### `idx_user_bookmarks_created_at`
+- **Table:** `user_bookmarks`
+- **Column:** `created_at`
+- **Purpose:** Optimize sorting bookmarks by creation date (for `getByUserId().oder()`)
+
 ## Sample Data
 
 - 7 venues (4 initial + 3 new from real events)
@@ -170,6 +180,7 @@ All schema changes are tracked in `supabase/migrations/`:
 - `006_add_image_and_coordinates.sql` - Add `image` column to events, add `latitude`/`longitude` to venues
 - `007_fix_longitude_precision_and_add_venue_coordinates.sql` - Fix longitude precision to DECIMAL(11, 8), add sample venue coordinates
 - `008_add_sample_events_for_showcase.sql` - Add 3 real events from Eventbrite (CLUBMATTIX, LOUD LOVE, Therapy - November) with new venues
+- `009_add_user_bookmarks_indexes.sql` - Add indexes on `user_bookmarks.user_id` and `user_bookmarks.created_at` for query performance
 
 **To apply a migration:**
 1. Review migration file
