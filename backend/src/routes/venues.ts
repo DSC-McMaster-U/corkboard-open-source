@@ -24,6 +24,7 @@ router.get("/", async (req: Request, res: Response) => {
     }
 });
 
+// POST /api/venues - Create a venue
 router.post("/", async (req: Request, res: Response) => {
     // Handle Input
     const {
@@ -42,8 +43,8 @@ router.post("/", async (req: Request, res: Response) => {
     // Call Service
     venueService
         .createVenue(name, venue_type, address, latitude, longitude)
-        .then((_) => {
-            res.status(200).json({ success: true });
+        .then((venue) => {
+            res.status(200).json({ id: venue["id"], success: true });
         })
         .catch((err: Error) => {
             console.log("Error creating venue: ", err);
