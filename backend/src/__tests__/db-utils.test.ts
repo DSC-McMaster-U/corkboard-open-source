@@ -1,5 +1,6 @@
 import { describe, it, expect } from "@jest/globals";
 import { db } from "../db/supabaseClient.js";
+import { haversineDistance, validateCoordinates } from "../utils/geo.js";
 
 describe("db.utils - Location Utilities", () => {
     describe("haversineDistance", () => {
@@ -16,7 +17,7 @@ describe("db.utils - Location Utilities", () => {
         const BURLINGTON_LNG = -79.7990;
 
         it("should calculate distance between Hamilton and Toronto correctly", () => {
-            const distance = db.utils.haversineDistance(
+            const distance = haversineDistance(
                 HAMILTON_LAT,
                 HAMILTON_LNG,
                 TORONTO_LAT,
@@ -30,7 +31,7 @@ describe("db.utils - Location Utilities", () => {
         });
 
         it("should calculate distance between Hamilton and Burlington correctly", () => {
-            const distance = db.utils.haversineDistance(
+            const distance = haversineDistance(
                 HAMILTON_LAT,
                 HAMILTON_LNG,
                 BURLINGTON_LAT,
@@ -44,7 +45,7 @@ describe("db.utils - Location Utilities", () => {
         });
 
         it("should return 0 for identical coordinates", () => {
-            const distance = db.utils.haversineDistance(
+            const distance = haversineDistance(
                 HAMILTON_LAT,
                 HAMILTON_LNG,
                 HAMILTON_LAT,
@@ -55,14 +56,14 @@ describe("db.utils - Location Utilities", () => {
         });
 
         it("should return the same distance regardless of direction", () => {
-            const distance1 = db.utils.haversineDistance(
+            const distance1 = haversineDistance(
                 HAMILTON_LAT,
                 HAMILTON_LNG,
                 TORONTO_LAT,
                 TORONTO_LNG
             );
 
-            const distance2 = db.utils.haversineDistance(
+            const distance2 = haversineDistance(
                 TORONTO_LAT,
                 TORONTO_LNG,
                 HAMILTON_LAT,
@@ -81,7 +82,7 @@ describe("db.utils - Location Utilities", () => {
             const MELBOURNE_LAT = -37.8136;
             const MELBOURNE_LNG = 144.9631;
 
-            const distance = db.utils.haversineDistance(
+            const distance = haversineDistance(
                 SYDNEY_LAT,
                 SYDNEY_LNG,
                 MELBOURNE_LAT,
@@ -96,44 +97,44 @@ describe("db.utils - Location Utilities", () => {
 
     describe("validateCoordinates", () => {
         it("should return true for valid latitude and longitude", () => {
-            const result = db.utils.validateCoordinates(43.2557, -79.8711);
+            const result = validateCoordinates(43.2557, -79.8711);
 
             expect(result.isValid).toBe(true);
             expect(result.error).toBeUndefined();
         });
 
         it("should reject latitude greater than 90", () => {
-            const result = db.utils.validateCoordinates(91, -79.8711);
+            const result = validateCoordinates(91, -79.8711);
 
             expect(result.isValid).toBe(false);
             expect(result.error).toContain("Latitude must be between -90 and 90");
         });
 
         it("should reject latitude less than -90", () => {
-            const result = db.utils.validateCoordinates(-91, -79.8711);
+            const result = validateCoordinates(-91, -79.8711);
 
             expect(result.isValid).toBe(false);
             expect(result.error).toContain("Latitude must be between -90 and 90");
         });
 
         it("should reject longitude greater than 180", () => {
-            const result = db.utils.validateCoordinates(43.2557, 181);
+            const result = validateCoordinates(43.2557, 181);
 
             expect(result.isValid).toBe(false);
             expect(result.error).toContain("Longitude must be between -180 and 180");
         });
 
         it("should reject longitude less than -180", () => {
-            const result = db.utils.validateCoordinates(43.2557, -181);
+            const result = validateCoordinates(43.2557, -181);
 
             expect(result.isValid).toBe(false);
             expect(result.error).toContain("Longitude must be between -180 and 180");
         });
 
         it("should accept boundary values", () => {
-            expect(db.utils.validateCoordinates(90, 180).isValid).toBe(true);
-            expect(db.utils.validateCoordinates(-90, -180).isValid).toBe(true);
-            expect(db.utils.validateCoordinates(0, 0).isValid).toBe(true);
+            expect(validateCoordinates(90, 180).isValid).toBe(true);
+            expect(validateCoordinates(-90, -180).isValid).toBe(true);
+            expect(validateCoordinates(0, 0).isValid).toBe(true);
         });
     });
 
@@ -164,7 +165,7 @@ describe("db.utils - Location Utilities", () => {
                     return false;
                 }
 
-                const distance = db.utils.haversineDistance(
+                const distance = haversineDistance(
                     userLat,
                     userLng,
                     event.venues.latitude,
@@ -177,7 +178,7 @@ describe("db.utils - Location Utilities", () => {
             // verify all filtered events are within radius
             result.forEach((event) => {
                 if (event.venues?.latitude && event.venues?.longitude) {
-                    const distance = db.utils.haversineDistance(
+                    const distance = haversineDistance(
                         userLat,
                         userLng,
                         event.venues.latitude,
