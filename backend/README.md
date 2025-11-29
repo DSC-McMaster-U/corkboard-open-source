@@ -73,7 +73,7 @@ src/
 -   `GET /api/genres/` - Get genres
 -   `POST /api/genres/` - Create a genre
 
-Endpoint documentation is available at endpoint-docs.md.
+Endpoint documentation is available at api-docs.md.
 
 ## Development
 
