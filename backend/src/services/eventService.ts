@@ -48,7 +48,8 @@ export const eventService = {
         );
         if (error) throw error;
         return data ?? [];
-    }
+    },
+    
     createEvent: async (
         title: string,
         venue_id: string,
