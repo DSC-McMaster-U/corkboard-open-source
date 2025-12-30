@@ -62,7 +62,10 @@ export const db = {
 
         // get events by id
         getById: (eventId: string) =>
-            supabase.from("events").select(`
+            supabase
+                .from("events")
+                .select(
+                    `
                 *,
                 venues (
                     id,
@@ -79,7 +82,10 @@ export const db = {
                         name
                     )
                 )
-            `).eq("id", eventId).single(),
+            `
+                )
+                .eq("id", eventId)
+                .single(),
 
         // create event
         create: (eventData: {
@@ -116,6 +122,10 @@ export const db = {
             latitude: number | undefined;
             longitude: number | undefined;
         }) => supabase.from("venues").insert(venueData).select().single(),
+
+        // deletes a venue, mainly used in test cases
+        deleteById: (venueId: string) =>
+            supabase.from("venues").delete().eq("id", venueId),
     },
     bookmarks: {
         // get all bookmarks for a user
