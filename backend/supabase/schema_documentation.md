@@ -6,8 +6,12 @@
 - `events` - Event listings with source tracking
 - `users` - User accounts
 - `genres` - Music genres
+- `artists` - Artists/performers
 - `user_bookmarks` - User-event bookmarks (many-to-many)
 - `event_genres` - Event-genre associations (many-to-many)
+- `user_favorite_genres` - User favorite genres (many-to-many)
+- `user_favorite_venues` - User favorite venues (many-to-many)
+- `user_favorite_artists` - User favorite artists (many-to-many)
 
 ## Enum Types
 
@@ -64,13 +68,16 @@
 
 ## Events Table - Additional Fields
 
-### `artist` (varchar(255), nullable)
-**Purpose:** Name of the artist or performer for the event.
+### `artist_id` (uuid, nullable, FK to `artists.id`)
+**Purpose:** Foreign key reference to the artist/performer for the event.
+
+**Relationship:** Links to `artists` table via foreign key constraint.
 
 **Examples:**
-- `"The Local Band"`
-- `"Jazz Quartet"`
+- UUID reference to artist record
 - `NULL` (for events without a specific artist)
+
+**Note:** The old `artist` VARCHAR column was replaced with `artist_id` in migration 011
 
 ### `image` (varchar(255), nullable)
 **Purpose:** Stores local file path to event image.
@@ -107,6 +114,81 @@
 **Example:** `-79.8711` (Hamilton, ON)
 
 **Note:** Both fields are nullable to allow venues without coordinates (can be populated later via geocoding).
+
+## Users Table - Account Fields
+
+### `username` (varchar(100), nullable, UNIQUE)
+**Purpose:** Unique username for the user account.
+
+**Examples:**
+- `"testuser"`
+- `"janedoe"`
+- `NULL` (optional field)
+
+### `profile_picture` (varchar(255), nullable)
+**Purpose:** URL or path to user profile picture.
+
+**Format:** Relative path from `backend/public/` directory (e.g. `"images/users/testuser.jpg"`)
+
+**Access:** Frontend accesses via `http://localhost:3000/images/users/testuser.jpg`
+
+**Examples:**
+- `"images/users/testuser.jpg"`
+- `NULL` (no profile picture)
+
+### `bio` (text, nullable)
+**Purpose:** User biography/description.
+
+**Examples:**
+- `"Student at McMaster University. Love live shows and discovering new artists!"`
+- `NULL` (no bio provided)
+
+## Artists Table
+
+**Purpose:** Normalized table for artists/performers. Replaces the VARCHAR `artist` column in events.
+
+### Columns
+- `id` (uuid, PRIMARY KEY) - Unique identifier
+- `name` (varchar(255), UNIQUE, NOT NULL) - Artist name
+- `bio` (text, nullable) - Artist biography
+- `image` (varchar(255), nullable) - Profile picture path
+- `created_at` (timestamp) - Creation timestamp
+
+**Relationships:**
+- One-to-many with `events` (via `events.artist_id`)
+- Many-to-many with `users` (via `user_favorite_artists`)
+
+## User Favorites Tables
+
+### `user_favorite_genres`
+**Purpose:** Junction table linking users to their favorite genres.
+
+**Columns:**
+- `user_id` (uuid, FK to `users.id`)
+- `genre_id` (uuid, FK to `genres.id`)
+- `created_at` (timestamp)
+
+**Primary Key:** (`user_id`, `genre_id`)
+
+### `user_favorite_venues`
+**Purpose:** Junction table linking users to their favorite venues.
+
+**Columns:**
+- `user_id` (uuid, FK to `users.id`)
+- `venue_id` (uuid, FK to `venues.id`)
+- `created_at` (timestamp)
+
+**Primary Key:** (`user_id`, `venue_id`)
+
+### `user_favorite_artists`
+**Purpose:** Junction table linking users to their favorite artists.
+
+**Columns:**
+- `user_id` (uuid, FK to `users.id`)
+- `artist_id` (uuid, FK to `artists.id`)
+- `created_at` (timestamp)
+
+**Primary Key:** (`user_id`, `artist_id`)
 
 ## Constraints
 
@@ -162,11 +244,43 @@
 - **Column:** `created_at`
 - **Purpose:** Optimize sorting bookmarks by creation date (for `getByUserId().oder()`)
 
+### `idx_events_artist_id`
+- **Table:** `events`
+- **Column:** `artist_id`
+- **Purpose:** Optimize artist-event joins and filtering
+
+### `idx_user_favorite_genres_user_id`
+- **Table:** `user_favorite_genres`
+- **Column:** `user_id`
+- **Purpose:** Optimize queries for user's favorite genres
+
+### `idx_user_favorite_venues_user_id`
+- **Table:** `user_favorite_venues`
+- **Column:** `user_id`
+- **Purpose:** Optimize queries for user's favorite venues
+
+### `idx_user_favorite_artists_user_id`
+- **Table:** `user_favorite_artists`
+- **Column:** `user_id`
+- **Purpose:** Optimize queries for user's favorite artists
+
+### `idx_user_favorite_artists_artist_id`
+- **Table:** `user_favorite_artists`
+- **Column:** `artist_id`
+- **Purpose:** Optimize reverse lookups (find users who like an artist)
+
+### `idx_artists_name`
+- **Table:** `artists`
+- **Column:** `name`
+- **Purpose:** Optimize artist lookups by name
+
 ## Sample Data
 
 - 7 venues (4 initial + 3 new from real events)
 - 6 events (3 initial + 3 real events from Eventbrite, all in Hamilton)
 - 7 genres
+- Multiple artists (from events and mock data for testing)
+- 2 users with complete profiles and favorites (Test User, Jane Doe)
 
 ## Migrations
 
@@ -181,6 +295,9 @@ All schema changes are tracked in `supabase/migrations/`:
 - `007_fix_longitude_precision_and_add_venue_coordinates.sql` - Fix longitude precision to DECIMAL(11, 8), add sample venue coordinates
 - `008_add_sample_events_for_showcase.sql` - Add 3 real events from Eventbrite (CLUBMATTIX, LOUD LOVE, Therapy - November) with new venues
 - `009_add_user_bookmarks_indexes.sql` - Add indexes on `user_bookmarks.user_id` and `user_bookmarks.created_at` for query performance
+- `010_add_user_account_fields.sql` - Add `username`, `profile_picture`, `bio` to users; create `artists` table and user favorites junction tables
+- `011_add_artist_id_to_events.sql` - Replace `artist` VARCHAR column with `artist_id` FK to `artists` table for normalization
+- `012_add_user_account_sample_data.sql` - Add sample user profiles and favorites for testing
 
 **To apply a migration:**
 1. Review migration file
