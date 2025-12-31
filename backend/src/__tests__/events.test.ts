@@ -19,7 +19,7 @@ type Event = {
     created_at: string;
     source_type: string | undefined;
     source_url: string | undefined;
-    artist: string | undefined;
+    artist_id: string | undefined;
     image: string | undefined;
     venues: {
         id: string;
@@ -29,6 +29,12 @@ type Event = {
         latitude: number | undefined;
         longitude: number | undefined;
     };
+    artists: {
+        id: string;
+        name: string;
+        bio: string | undefined;
+        image: string | undefined;
+    } | null | undefined;
     event_genres:
         | Array<{
               genre_id: string;
@@ -204,7 +210,10 @@ describe("GET /api/events/", () => {
             expect(event.created_at).toBe("2025-10-26T23:37:49.998663");
             expect(event.source_type).toBe("manual");
             expect(event.source_url).toBeNull();
-            expect(event.artist).toBe("Hamilton's Finest");
+            expect(event.artists).toBeDefined();
+            if (event.artists) {
+                expect(event.artists.name).toBe("Hamilton's Finest");
+            }
             expect(event.image).toBe("images/events/the-underground-maybe.jpg");
 
             // Venue Verification

@@ -42,6 +42,12 @@ export const db = {
                             id,
                             name
                         )
+                    ),
+                    artists (
+                        id,
+                        name,
+                        bio,
+                        image
                     )
                 `
                 )
@@ -81,6 +87,12 @@ export const db = {
                         id,
                         name
                     )
+                ),
+                artists (
+                    id,
+                    name,
+                    bio,
+                    image
                 )
             `
                 )
@@ -98,6 +110,7 @@ export const db = {
             source_type: string | undefined;
             source_url: string | undefined;
             image: string | undefined;
+            artist_id?: string | undefined;
         }) => supabase.from("events").insert(eventData).select().single(),
 
         // delete event by ID
@@ -150,6 +163,12 @@ export const db = {
                             venue_type,
                             latitude,
                             longitude
+                        ),
+                        artists (
+                            id,
+                            name,
+                            bio,
+                            image
                         )
                     )
                 `
@@ -193,6 +212,51 @@ export const db = {
         getById: (userId: string) =>
             supabase.from("users").select("*").eq("id", userId).single(),
 
+        // get user by ID with all favorites (genres, venues, artists)
+        getByIdWithFavorites: (userId: string) =>
+            supabase
+                .from("users")
+                .select(
+                    `
+                    *,
+                    user_favorite_genres (
+                        genre_id,
+                        genres (
+                            id,
+                            name
+                        )
+                    ),
+                    user_favorite_venues (
+                        venue_id,
+                        venues (
+                            id,
+                            name,
+                            address,
+                            venue_type
+                        )
+                    ),
+                    user_favorite_artists (
+                        artist_id,
+                        artists (
+                            id,
+                            name,
+                            bio,
+                            image
+                        )
+                    )
+                `
+                )
+                .eq("id", userId)
+                .single(),
+
+        // get user by username
+        getByUsername: (username: string) =>
+            supabase
+                .from("users")
+                .select("*")
+                .eq("username", username)
+                .maybeSingle(),
+
         // get user by email (for duplicate check)
         getByEmail: (email: string) =>
             supabase.from("users").select("*").eq("email", email).maybeSingle(),
@@ -200,6 +264,71 @@ export const db = {
         // create user
         create: (name: string, email: string) =>
             supabase.from("users").insert({ name, email }).select().single(),
+
+        // update user profile
+        updateProfile: (
+            userId: string,
+            updates: {
+                username?: string;
+                name?: string;
+                profile_picture?: string;
+                bio?: string;
+            }
+        ) =>
+            supabase
+                .from("users")
+                .update(updates)
+                .eq("id", userId)
+                .select()
+                .single(),
+
+        // add favorite genre
+        addFavoriteGenre: (userId: string, genreId: string) =>
+            supabase
+                .from("user_favorite_genres")
+                .insert({ user_id: userId, genre_id: genreId })
+                .select()
+                .single(),
+
+        // remove favorite genre
+        removeFavoriteGenre: (userId: string, genreId: string) =>
+            supabase
+                .from("user_favorite_genres")
+                .delete()
+                .eq("user_id", userId)
+                .eq("genre_id", genreId),
+
+        // add favorite venue
+        addFavoriteVenue: (userId: string, venueId: string) =>
+            supabase
+                .from("user_favorite_venues")
+                .insert({ user_id: userId, venue_id: venueId })
+                .select()
+                .single(),
+
+        // remove favorite venue
+        removeFavoriteVenue: (userId: string, venueId: string) =>
+            supabase
+                .from("user_favorite_venues")
+                .delete()
+                .eq("user_id", userId)
+                .eq("venue_id", venueId),
+
+        // add favorite artist
+        addFavoriteArtist: (userId: string, artistId: string) =>
+            supabase
+                .from("user_favorite_artists")
+                .insert({ user_id: userId, artist_id: artistId })
+                .select()
+                .single(),
+
+        // remove favorite artist
+        removeFavoriteArtist: (userId: string, artistId: string) =>
+            supabase
+                .from("user_favorite_artists")
+                .delete()
+                .eq("user_id", userId)
+                .eq("artist_id", artistId),
     },
     genres: {
         // get all genres
@@ -212,6 +341,26 @@ export const db = {
         // create genre
         create: (name: string) =>
             supabase.from("genres").insert({ name }).select().single(),
+    },
+    artists: {
+        // get all artists
+        getAll: () => supabase.from("artists").select("*"),
+
+        // get artist by name (for duplicate check)
+        getByName: (name: string) =>
+            supabase.from("artists").select("*").eq("name", name).maybeSingle(),
+
+        // get artist by ID
+        getById: (artistId: string) =>
+            supabase.from("artists").select("*").eq("id", artistId).single(),
+
+        // create artist
+        create: (name: string, bio?: string, image?: string) =>
+            supabase
+                .from("artists")
+                .insert({ name, bio, image })
+                .select()
+                .single(),
     },
     healthCheck: () => supabase.from("venues").select("count").limit(1), // returns the number of venues
     auth: {
