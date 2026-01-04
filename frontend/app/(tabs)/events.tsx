@@ -171,8 +171,19 @@ export default function EventsScreen() {
             { signal: controller.signal}
           );
           if (isMounted) {
-            console.log("Fetched events:", res.events);
-            setEvents(res.events || []);
+            const venueShows = (res.events ?? [])
+            .sort((a, b) => {
+              const ta = new Date(a.start_time ?? 0).getTime();
+              const tb = new Date(b.start_time ?? 0).getTime();
+
+              // push invalid/missing dates to the end
+              if (!Number.isFinite(ta) && !Number.isFinite(tb)) return 0;
+              if (!Number.isFinite(ta)) return 1;
+              if (!Number.isFinite(tb)) return -1;
+
+              return ta - tb;
+            });
+            setEvents(venueShows);
           }
         } catch (err: any) {
           if (isMounted && err.name !== "AbortError") {
