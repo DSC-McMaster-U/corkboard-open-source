@@ -4,6 +4,8 @@ import { EventData } from "@/constants/types";
 import { formatEventDateTime, formatEventDateTimeToDate, formatEventDateTimeToTime } from "@/scripts/formatDateHelper";
 import { getImageUrl } from "@/api/api";
 import { Colors } from "@/constants/theme";
+import { router } from 'expo-router';
+
 
 type EventModalProps = {
   visible: boolean;
@@ -25,6 +27,28 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
   const costText = data.cost !== undefined ? `$${data.cost.toFixed(2)}` : "Unspecified cost.";
   const descriptionText = data.description ? data.description : "No description available.";
   const sourceUrl = data.source_url ? data.source_url : "https://www.ticketmaster.com";
+
+  const handleVenuePress = () => {
+    if (!data.venues) return;
+
+    router.push({
+      pathname: '/venues/[venueName]',
+      params: {
+        venueName: data.venues.name,
+        venueID: data.venues.id,
+        address: data.venues.address,
+        created_at: null,
+        venueType: data.venues.venue_type,
+        latitude: data.venues.latitude,
+        longitude: data.venues.longitude,
+        source_url: sourceUrl, // temp
+        image: null,
+        description: null,
+      },
+    });
+  };
+
+  // console.log("Event data:", JSON.stringify(data, null, 2))
 
   const handleOpenTickets = async () => {
     try {
@@ -92,12 +116,32 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
               <View className="flex-row items-center mt-2">
                 <FontAwesome name="map-marker" size={16} color="#f97316" />
                 <View className="ml-2 flex-1">
-                  <Text
-                    className="font-medium text-neutral-100"
-                    numberOfLines={1}
-                  >
-                    {venue?.name || "Unspecified venue"}
-                  </Text>
+                  {venue?.name ? (
+                    <Pressable
+                      onPress={handleVenuePress}
+                      android_ripple={{ color: 'rgba(249,115,22,0.12)' }}
+                      style={({ pressed }) => [
+                        { transform: [{ scale: pressed ? 0.97 : 1 }] },
+                        pressed ? { opacity: 0.95 } : {},
+                      ]}
+                      hitSlop={6}
+                      accessibilityRole="link"
+                    >
+                      <Text
+                        className="font-medium text-neutral-100 underline decoration-[#f97316] underline-offset-2"
+                        numberOfLines={1}
+                      >
+                        {venue.name}
+                      </Text>
+                    </Pressable>
+                  ) : (
+                    <Text
+                      className="font-medium text-neutral-100"
+                      numberOfLines={1}
+                    >
+                      Unspecified venue
+                    </Text>
+                  )}
                   {venue?.address && (
                     <Text
                       className="text-sm mt-0.5 text-neutral-200"
