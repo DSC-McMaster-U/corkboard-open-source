@@ -149,8 +149,11 @@ function InfoBox({ event, onPress }: InfoBoxProps) {
 
 
 export default function EventsScreen() {
+  const currentDate: Date = new Date();
+  const defaultEndDate: Date = new Date(currentDate.getTime() + 14 * 24 * 60 * 60 * 1000);  // 2 weeks in the future
 
-  const [range, setRange] = useState<[number, number]>([10, 70]);  // set up state for ticket price slider bar
+  const [costRange, setCostRange] = useState<[number, number]>([10, 70]);  // set up state for ticket price slider bar
+  const [dateRange, setDateRange] = useState<[Date, Date]>([currentDate, defaultEndDate]);  // state for date range -> bottom panel
   const [selectedEvent, setSelectedEvent] = useState<any>(null); // store event object that user clicks
   const [modalVisible, setModalVisible] = useState(false); // modal state to open/close event popup
   const [eventList, setEvents] = useState<EventData[]>([]); // store events from backend
@@ -167,7 +170,7 @@ export default function EventsScreen() {
         setLoading(true);
         setError(null);
         try {
-          const res = await apiFetch<EventList>(`api/events?limit=${eventLimit}&min_cost=${range[0]}&max_cost=${range[1]}`,
+          const res = await apiFetch<EventList>(`api/events?limit=${eventLimit}&min_cost=${costRange[0]}&max_cost=${costRange[1]}&min_start_time=${dateRange[0].toISOString()}&max_start_time=${(new Date(dateRange[1].getTime() + 24*60*60*1000)).toISOString()}`,
             { signal: controller.signal}
           );
           if (isMounted) {
@@ -205,7 +208,7 @@ export default function EventsScreen() {
         controller.abort();
         isMounted = false;
       };
-    }, [range]);
+    }, [costRange, dateRange]);
 
 
   return (
@@ -226,7 +229,7 @@ export default function EventsScreen() {
           <View className="self-start bg-[#E3C9AF] px-3 py-1 rounded-full">
             <Text className="text-[12px] font-semibold text-[#411900]">
               {`Showing ${eventList.length} ${eventList.length === 1 ? "event" : "events"}`}{' '}
-              <Text className="text-[#6a3f1d]">{`· $${range[0]}–$${range[1]}`}</Text>
+              <Text className="text-[#6a3f1d]">{`· $${costRange[0]}–$${costRange[1]}`}</Text>
             </Text>
           </View>
         </View>
@@ -251,7 +254,7 @@ export default function EventsScreen() {
         />
       
       {/* Bottom panel */}
-        <BottomPanel range={range} setRange={setRange}/>
+        <BottomPanel range={costRange} setRange={setCostRange} dateRange={dateRange} setDateRange={setDateRange}/>
         {/* Loading overlay */}
         {loading && (
           <View className="absolute inset-0 justify-center items-center bg-black/40">

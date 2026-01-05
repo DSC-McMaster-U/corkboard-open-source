@@ -9,9 +9,11 @@ import SearchBarFilter from '@/components/bottom-panel/search-bar-filter';
 type Props = {
   range: [number, number];
   setRange: (r: [number, number]) => void;
+  dateRange: [Date, Date];
+  setDateRange: (r: [Date, Date]) => void;
 };
 
-export default function BottomPanel({ range, setRange }: Props) {
+export default function BottomPanel({ range, setRange, dateRange, setDateRange }: Props) {
   const snapPoints = useMemo(() => ['12%', '45%'], []);
   const [searchActive, setSearchActive] = useState(false);
   const dismissRef = useRef<() => void>(() => {});
@@ -82,7 +84,7 @@ export default function BottomPanel({ range, setRange }: Props) {
 
           {/* Calendar buttons */}
           <View style={{ marginTop: 8 }}>
-            <DateRangePicker />
+            <DateRangePicker dateRange={dateRange} setDateRange={setDateRange}/>
           </View>
 
           </BottomSheetView>

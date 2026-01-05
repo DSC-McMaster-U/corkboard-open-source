@@ -12,7 +12,12 @@ const HAMILTON = { latitude: 43.2557, longitude: -79.8711, latitudeDelta: 0.04, 
 const eventLimit = 20;
 
 export default function MapScreen() {
-  const [range, setRange] = useState<[number, number]>([10, 70]);
+
+  const currentDate: Date = new Date();
+  const defaultEndDate: Date = new Date(currentDate.getTime() + 14 * 24 * 60 * 60 * 1000);  // 2 weeks in the future
+
+  const [dateRange, setDateRange] = useState<[Date, Date]>([currentDate, defaultEndDate]);  // state for date range -> bottom panel
+  const [costRange, setCostRange] = useState<[number, number]>([10, 70]);
   const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [events, setEvents] = useState<EventData[]>([]);
@@ -36,7 +41,7 @@ export default function MapScreen() {
       setLoading(true);
       setError(null);
       try {
-        const res = await apiFetch<EventList>(`api/events?limit=${eventLimit}&min_cost=${range[0]}&max_cost=${range[1]}`,
+          const res = await apiFetch<EventList>(`api/events?limit=${eventLimit}&min_cost=${costRange[0]}&max_cost=${costRange[1]}&min_start_time=${dateRange[0].toISOString()}&max_start_time=${(new Date(dateRange[1].getTime() + 24*60*60*1000)).toISOString()}`,
           { signal: controller.signal}
         );
         if (isMounted) {
@@ -63,7 +68,7 @@ export default function MapScreen() {
       controller.abort();
       isMounted = false;
     };
-  }, [range]);
+  }, [costRange, dateRange]);
 
   // Helper function to generate random coordinates around Hamilton
   const getRandomCoordinate = (base: number, offset: number) => base + Math.random() * offset;
@@ -107,7 +112,7 @@ export default function MapScreen() {
         <EventModal visible={modalVisible} onClose={() => setModalVisible(false)} data={selectedEvent}/>
     
         {/* Bottom panel */}
-        <BottomPanel range={range} setRange={setRange} />
+        <BottomPanel range={costRange} setRange={setCostRange} dateRange={dateRange} setDateRange={setDateRange}/>
 
         {/* Loading overlay */}
         {loading && (
