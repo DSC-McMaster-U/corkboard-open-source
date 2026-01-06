@@ -6,14 +6,18 @@ import { Slider } from '@miblanchard/react-native-slider';
 import DateRangePicker from "@/components/bottom-panel/date-range-picker";
 import SearchBarFilter from '@/components/bottom-panel/search-bar-filter'; 
 
+type Filter = "none" | "genre" | "artist" | "venue";
+
 type Props = {
   range: [number, number];
   setRange: (r: [number, number]) => void;
   dateRange: [Date, Date];
   setDateRange: (r: [Date, Date]) => void;
+  setSearchFilter: (r: Filter) => void;
+  setSearchQuery: (r: String) => void;
 };
 
-export default function BottomPanel({ range, setRange, dateRange, setDateRange }: Props) {
+export default function BottomPanel({ range, setRange, dateRange, setDateRange, setSearchFilter, setSearchQuery }: Props) {
   const snapPoints = useMemo(() => ['12%', '45%'], []);
   const [searchActive, setSearchActive] = useState(false);
   const dismissRef = useRef<() => void>(() => {});
@@ -51,6 +55,11 @@ export default function BottomPanel({ range, setRange, dateRange, setDateRange }
           <View style={{ marginBottom: 18 }}>
             <SearchBarFilter
               onSearch={({ query, filter }) => {
+                console.log("query: ", query)
+                console.log("filter: ", filter)
+
+                setSearchQuery(query)
+                setSearchFilter(filter)
                 // run your search using { query, filter, range }
               }}
               onActiveChange={setSearchActive}                

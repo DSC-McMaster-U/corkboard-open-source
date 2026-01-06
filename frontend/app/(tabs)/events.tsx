@@ -3,7 +3,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import EventModal from '@/components/event-modal';
 import BottomPanel from '@/components/bottom-panel/bottom-panel'; 
-import type { EventData, EventList } from "@/constants/types";
+import type { EventData, EventList, GenreData, Genre } from "@/constants/types";
 import { formatEventDateTimeToDate, formatEventDateTimeToTime } from "@/scripts/formatDateHelper";
 import { apiFetch , getImageUrl } from "@/api/api";
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -94,59 +94,7 @@ function InfoBox({ event, onPress }: InfoBoxProps) {
   );
 }
 
-//         {/* Show Name */}
-//         <Text
-//           style={{ position: 'absolute', top: 10, left: 15, fontSize: 18, fontWeight: 'bold', color: 'white'}}>
-//           {event.title}
-//         </Text>
-
-//         {/* Artist */}
-//         <Text style={{ position: 'absolute', top: 27, left: 15, fontSize: 16, color: 'white'}}>
-//           {event.artist ? event.artist : "Unspecified artist"}
-//         </Text>
-
-//         {/* Location */}
-//         <View style={{ position: 'absolute', bottom: 63, left: 15, flexDirection: 'row', alignItems: 'center' }}>
-//           <FontAwesome name="map-marker" size={15} color="white" />
-//           <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>
-//             {event.venues.name ? event.venues.name : "Unspecified venue"}
-//           </Text>
-//         </View>
-
-//         {/* Date */}
-//         <View style={{ position: 'absolute', bottom: 44, left: 13, flexDirection: 'row', alignItems: 'center' }}>
-//           <FontAwesome name="calendar" size={14} color="white" />
-//           <Text style={{fontSize: 14, color: 'white', marginLeft: 5}}>{formatEventDateTimeToDate(event.start_time)}</Text>
-//         </View>
-
-//         {/* Time */}
-//         <View style={{ position: 'absolute', bottom: 25, left: 13, flexDirection: 'row', alignItems: 'center'}}>
-//           <FontAwesome name="clock-o" size={14} color="white" />
-//           <Text style={{ fontSize: 14, color: 'white', marginLeft: 6 }}>{formatEventDateTimeToTime(event.start_time)}</Text>
-//         </View>
-
-//         {/* Genre */}
-//         <View style={{ position: 'absolute', bottom: 7, left: 11, flexDirection: 'row', alignItems: 'center' }}>
-//           <FontAwesome name="music" size={14} color="white" />
-//           <Text style={{ fontSize: 14, color: 'white', marginLeft: 6}}>
-//             {event.event_genres && event.event_genres.length > 0
-//               ? event.event_genres.map((eg) => eg.genres.name).join(", ")
-//               : "Unspecified"
-//             }
-//           </Text>
-//         </View>
-
-//         {/* Photo rectangle */}
-//         <Image
-//           source={{ uri: imageUri }} 
-//           style={{ width: 98, height: 92, borderRadius: 3, position: 'absolute', top: 22, right: 14 }}
-//         />
-//       </View>
-//     </TouchableOpacity>
-//   );
-// }
-
-
+type Filter = "none" | "genre" | "artist" | "venue";
 
 export default function EventsScreen() {
   const currentDate: Date = new Date();
@@ -154,6 +102,8 @@ export default function EventsScreen() {
 
   const [costRange, setCostRange] = useState<[number, number]>([10, 70]);  // set up state for ticket price slider bar
   const [dateRange, setDateRange] = useState<[Date, Date]>([currentDate, defaultEndDate]);  // state for date range -> bottom panel
+  const [searchFilter, setSearchFilter] = useState<Filter>("none")  // state for search filter ("genre", "artist", "venue", "none")
+  const [searchQuery, setSearchQuery] = useState<String>("")    // state for search query
   const [selectedEvent, setSelectedEvent] = useState<any>(null); // store event object that user clicks
   const [modalVisible, setModalVisible] = useState(false); // modal state to open/close event popup
   const [eventList, setEvents] = useState<EventData[]>([]); // store events from backend
@@ -174,8 +124,8 @@ export default function EventsScreen() {
             { signal: controller.signal}
           );
           if (isMounted) {
-            const venueShows = (res.events ?? [])
-            .sort((a, b) => {
+            const recentShows = (res.events ?? [])
+            .sort((a, b) => {   // sort by earliest date first
               const ta = new Date(a.start_time ?? 0).getTime();
               const tb = new Date(b.start_time ?? 0).getTime();
 
@@ -185,8 +135,58 @@ export default function EventsScreen() {
               if (!Number.isFinite(tb)) return -1;
 
               return ta - tb;
+            })
+
+            const tokens = searchQuery
+                .toLowerCase()
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean);            
+                
+            const includesAllTokens = (haystack: string) =>
+              tokens.length === 0 || tokens.every(t => haystack.includes(t));
+
+            const getGenreHaystack = (e: EventData) =>
+              (e.event_genres ?? [])
+                .map(gd => gd.genres?.name ?? "")
+                .join(" ")
+                .toLowerCase();
+
+            const getArtistHaystack = (e: EventData) =>
+              (e.artist ?? "").toLowerCase();
+
+            const getVenueHaystack = (e: EventData) =>
+              (e.venues?.name ?? "").toLowerCase();
+
+            // for "none", search a few useful fields
+            const getDefaultHaystack = (e: EventData) =>
+              [
+                e.title,
+                e.description ?? "",
+                e.artist ?? "",
+                e.venues?.name ?? "",
+                ...((e.event_genres ?? []).map(gd => gd.genres?.name ?? "")),
+              ]
+                .join(" ")
+                .toLowerCase();
+            
+            const filteredShows = recentShows.filter(e => {
+              if (tokens.length === 0) return true;
+
+              switch (searchFilter) {
+                case "genre":
+                  return includesAllTokens(getGenreHaystack(e));
+                case "artist":
+                  return includesAllTokens(getArtistHaystack(e));
+                case "venue":
+                  return includesAllTokens(getVenueHaystack(e));
+                case "none":
+                default:
+                  return includesAllTokens(getDefaultHaystack(e));
+              }
             });
-            setEvents(venueShows);
+
+            setEvents(filteredShows);
           }
         } catch (err: any) {
           if (isMounted && err.name !== "AbortError") {
@@ -208,7 +208,7 @@ export default function EventsScreen() {
         controller.abort();
         isMounted = false;
       };
-    }, [costRange, dateRange]);
+    }, [costRange, dateRange, searchFilter, searchQuery]);
 
 
   return (
@@ -254,7 +254,7 @@ export default function EventsScreen() {
         />
       
       {/* Bottom panel */}
-        <BottomPanel range={costRange} setRange={setCostRange} dateRange={dateRange} setDateRange={setDateRange}/>
+        <BottomPanel range={costRange} setRange={setCostRange} dateRange={dateRange} setDateRange={setDateRange} setSearchFilter={setSearchFilter} setSearchQuery={setSearchQuery} />
         {/* Loading overlay */}
         {loading && (
           <View className="absolute inset-0 justify-center items-center bg-black/40">

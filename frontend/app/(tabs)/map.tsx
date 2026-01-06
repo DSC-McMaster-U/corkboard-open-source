@@ -11,6 +11,8 @@ import { useNavBarVisibility } from "@/scripts/navBarVisibility";
 const HAMILTON = { latitude: 43.2557, longitude: -79.8711, latitudeDelta: 0.04, longitudeDelta: 0.04 };
 const eventLimit = 20;
 
+type Filter = "none" | "genre" | "artist" | "venue";
+
 export default function MapScreen() {
 
   const currentDate: Date = new Date();
@@ -18,6 +20,8 @@ export default function MapScreen() {
 
   const [dateRange, setDateRange] = useState<[Date, Date]>([currentDate, defaultEndDate]);  // state for date range -> bottom panel
   const [costRange, setCostRange] = useState<[number, number]>([10, 70]);
+  const [searchFilter, setSearchFilter] = useState<Filter>("none")  // state for search filter ("genre", "artist", "venue", "none")
+  const [searchQuery, setSearchQuery] = useState<String>("")    // state for search query
   const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [events, setEvents] = useState<EventData[]>([]);
@@ -46,7 +50,58 @@ export default function MapScreen() {
         );
         if (isMounted) {
           //console.log("Events received:", res.events);
-          setEvents(res.events || []);
+          const shows = (res.events ?? [])
+
+          const tokens = searchQuery
+              .toLowerCase()
+              .trim()
+              .split(/\s+/)
+              .filter(Boolean);            
+              
+          const includesAllTokens = (haystack: string) =>
+            tokens.length === 0 || tokens.every(t => haystack.includes(t));
+
+          const getGenreHaystack = (e: EventData) =>
+            (e.event_genres ?? [])
+              .map(gd => gd.genres?.name ?? "")
+              .join(" ")
+              .toLowerCase();
+
+          const getArtistHaystack = (e: EventData) =>
+            (e.artist ?? "").toLowerCase();
+
+          const getVenueHaystack = (e: EventData) =>
+            (e.venues?.name ?? "").toLowerCase();
+
+          // for "none", search a few useful fields
+          const getDefaultHaystack = (e: EventData) =>
+            [
+              e.title,
+              e.description ?? "",
+              e.artist ?? "",
+              e.venues?.name ?? "",
+              ...((e.event_genres ?? []).map(gd => gd.genres?.name ?? "")),
+            ]
+              .join(" ")
+              .toLowerCase();
+          
+          const filteredShows = shows.filter(e => {
+            if (tokens.length === 0) return true;
+
+            switch (searchFilter) {
+              case "genre":
+                return includesAllTokens(getGenreHaystack(e));
+              case "artist":
+                return includesAllTokens(getArtistHaystack(e));
+              case "venue":
+                return includesAllTokens(getVenueHaystack(e));
+              case "none":
+              default:
+                return includesAllTokens(getDefaultHaystack(e));
+            }
+          });
+
+          setEvents(filteredShows);
         }
       } catch (err: any) {
         if (isMounted && err.name !== "AbortError") {
@@ -68,7 +123,7 @@ export default function MapScreen() {
       controller.abort();
       isMounted = false;
     };
-  }, [costRange, dateRange]);
+  }, [costRange, dateRange, searchFilter, searchQuery]);
 
   // Helper function to generate random coordinates around Hamilton
   const getRandomCoordinate = (base: number, offset: number) => base + Math.random() * offset;
@@ -112,7 +167,7 @@ export default function MapScreen() {
         <EventModal visible={modalVisible} onClose={() => setModalVisible(false)} data={selectedEvent}/>
     
         {/* Bottom panel */}
-        <BottomPanel range={costRange} setRange={setCostRange} dateRange={dateRange} setDateRange={setDateRange}/>
+        <BottomPanel range={costRange} setRange={setCostRange} dateRange={dateRange} setDateRange={setDateRange} setSearchFilter={setSearchFilter} setSearchQuery={setSearchQuery}/>
 
         {/* Loading overlay */}
         {loading && (
