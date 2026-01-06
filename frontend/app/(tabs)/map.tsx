@@ -5,9 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomPanel from '@/components/bottom-panel/bottom-panel'; 
 import EventModal from '@/components/event-modal'; 
 import { apiFetch } from "@/api/api";
-import { EventData, EventList } from "@/constants/types";
+import { EventData, EventList, VenueData } from "@/constants/types";
 import { formatEventDateTime } from "@/scripts/formatDateHelper";
+import { router } from 'expo-router';
 import { useNavBarVisibility } from "@/scripts/navBarVisibility";
+import { Colors } from "@/constants/theme";
 const HAMILTON = { latitude: 43.2557, longitude: -79.8711, latitudeDelta: 0.04, longitudeDelta: 0.04 };
 const eventLimit = 20;
 
@@ -25,6 +27,7 @@ export default function MapScreen() {
   const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [events, setEvents] = useState<EventData[]>([]);
+  const [venues, setVenues] = useState<VenueData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -101,7 +104,32 @@ export default function MapScreen() {
             }
           });
 
-          setEvents(filteredShows);
+
+          const venueList: VenueData[] = []
+          let venueMap: Map<string, number> = new Map();
+          filteredShows.forEach(e => {
+            const id: string = e.venues?.id;
+            if (id && venueMap.has(id)) {
+              if (venueMap.get(id) == 1) venueList.push(e.venues)
+              venueMap.set(id, venueMap.get(id)! + 1);
+            } else if (id && !venueMap.has(id)) {
+              venueMap.set(id, 1);
+            }
+          });
+          console.log('venue map: ', venueMap)
+
+
+          // if multiple events at same venue, just place marker for venue
+          const uniqueVenueEvents = filteredShows.filter(e => {
+            if (venueMap.has(e.venues?.id) && venueMap.get(e.venues.id)! > 1) return false
+            else return true
+          })
+
+          console.log('events: ', uniqueVenueEvents);
+          console.log('venues: ', venueList);
+
+          setEvents(uniqueVenueEvents);
+          setVenues(venueList)
         }
       } catch (err: any) {
         if (isMounted && err.name !== "AbortError") {
@@ -128,6 +156,26 @@ export default function MapScreen() {
   // Helper function to generate random coordinates around Hamilton
   const getRandomCoordinate = (base: number, offset: number) => base + Math.random() * offset;
 
+  const handleVenuePress = (v: VenueData) => {
+      if (!v) return;
+  
+      router.push({
+        pathname: '/venues/[venueName]',
+        params: {
+          venueName: v.name,
+          venueID: v.id,
+          address: v.address,
+          created_at: null,
+          venueType: v.venue_type,
+          latitude: v.latitude,
+          longitude: v.longitude,
+          source_url: "ticketmaster.com/", // temp
+          image: null,
+          description: null,
+        },
+      });
+    };
+
   return (
     <SafeAreaView className='bg-[#AE6E4E] flex-1' edges={[ 'top', 'left', 'right' ]}>
       <StatusBar barStyle="light-content" backgroundColor="#411900" />
@@ -143,24 +191,42 @@ export default function MapScreen() {
       <View className="flex-1">
         {/* Map */}
         <MapView style={{ flex: 1 }} provider={PROVIDER_GOOGLE} initialRegion={HAMILTON}>
-          {events.map((e, idx) => (
+          {events.map((e, idx) => (   // map events with unique venues
             <Marker
-            key={e.id}
-            coordinate={{ // temp using random coordinates near Hamilton center, latitude and longitude should be NOT NULL in future
-              latitude: typeof e.venues?.latitude === 'number'
-                ? e.venues.latitude
-                : getRandomCoordinate(43.25, 0.01),
-              longitude: typeof e.venues?.longitude === 'number'
-                ? e.venues.longitude
-                : getRandomCoordinate(-79.88, 0.01),
-            }}
-            title={e.title}
-            // description={`${formatEventDateTime(e.start_time)} • ${e.description}`}
-            onPress={() => {
-              setSelectedEvent(e);
-              setModalVisible(true);
-            }}
-          />
+              key={`e-${e.id}`}
+              coordinate={{ 
+                latitude: typeof e.venues?.latitude === 'number'
+                  ? e.venues.latitude
+                  : getRandomCoordinate(43.25, 0.01),
+                longitude: typeof e.venues?.longitude === 'number'
+                  ? e.venues.longitude
+                  : getRandomCoordinate(-79.88, 0.01),
+              }}
+              title={e.title}
+              // description={`${formatEventDateTime(e.start_time)} • ${e.description}`}
+              onPress={() => {
+                setSelectedEvent(e);
+                setModalVisible(true);
+              }}
+            />
+          ))}
+          {venues.map((v, idx) => ( // map venues in place of events with nonunique venues
+            <Marker 
+              key={`v-${v.id}`}
+              coordinate={{ 
+                latitude: typeof v.latitude === 'number'
+                  ? v.latitude
+                  : getRandomCoordinate(43.25, 0.01), //temp
+                longitude: typeof v.longitude === 'number'
+                  ? v.longitude
+                  : getRandomCoordinate(-79.88, 0.01), //temp
+              }}
+              title={v.name}
+              onPress={() => {
+                handleVenuePress(v);
+              }}
+              pinColor={'blue'}
+            />
           ))}
         </MapView>
 
