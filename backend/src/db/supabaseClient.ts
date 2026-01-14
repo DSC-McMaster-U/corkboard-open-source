@@ -195,7 +195,7 @@ export const db = {
 
         // get user by email (for duplicate check)
         getByEmail: (email: string) =>
-            supabase.from("users").select("*").eq("email", email).maybeSingle(),
+            supabase.from("users").select("*").eq("email", email).single(), // Changed to .single() from maybeSingle() for consistent erroring
 
         // create user
         create: (name: string, email: string) =>
@@ -207,11 +207,15 @@ export const db = {
 
         // get genre by name (for duplicate check)
         getByName: (name: string) =>
-            supabase.from("genres").select("*").eq("name", name).maybeSingle(),
+            supabase.from("genres").select("*").eq("name", name).single(), // Changed to .single() from maybeSingle() for consistent erroring
 
         // create genre
         create: (name: string) =>
             supabase.from("genres").insert({ name }).select().single(),
+
+        // delete genre by ID
+        deleteById: (genreId: string) =>
+            supabase.from("genres").delete().eq("id", genreId),
     },
     healthCheck: () => supabase.from("venues").select("count").limit(1), // returns the number of venues
     auth: {

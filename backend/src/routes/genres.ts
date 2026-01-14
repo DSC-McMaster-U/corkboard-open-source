@@ -35,8 +35,8 @@ router.post("/", async (req: Request, res: Response) => {
     // Call Service
     genresService
         .create(name)
-        .then((_) => {
-            res.status(200).json({ success: true });
+        .then((genre) => {
+            res.status(200).json({ id: genre.id, success: true });
         })
         .catch((err: Error) => {
             console.log("Error creating genre: ", err);
