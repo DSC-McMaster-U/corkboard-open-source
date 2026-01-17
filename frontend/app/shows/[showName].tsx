@@ -119,13 +119,27 @@ export default function ShowDetailsPage() {
     }
   };
 
-  const handleGetTickets = () => {
+  const handleGetTickets = async () => {
     if (source_url) {
       Linking.openURL(source_url as string);
     }
-    // create bookmark for event
-    setIsBookmarked(false);
-    handleBookmarkToggle();
+
+    // Only create bookmark if not already bookmarked
+    if (!isBookmarked && event_id) {
+      setBookmarkLoading(true);
+      try {
+        await apiFetch('api/bookmarks', {
+          method: 'POST',
+          headers: { Authorization: 'TESTING_BYPASS' },
+          body: JSON.stringify({ eventId: event_id }),
+        });
+        setIsBookmarked(true);
+      } catch (err) {
+        console.error('Failed to bookmark event:', err);
+      } finally {
+        setBookmarkLoading(false);
+      }
+    }
   };
 
   return (

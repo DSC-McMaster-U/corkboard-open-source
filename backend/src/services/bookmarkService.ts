@@ -23,10 +23,10 @@ export const bookmarkService = {
         return data;
     },
     removeBookmark: async (userId: string, eventId: string) => {
-        // check if bookmark exists - if not, succeed silently (idempotent)
+        // check if bookmark exists
         const { data: existing } = await db.bookmarks.exists(userId, eventId);
         if (!existing) {
-            return true; // Already removed or never existed, return success
+            throw new Error("Bookmark not found");
         }
 
         const { error } = await db.bookmarks.delete(userId, eventId);
