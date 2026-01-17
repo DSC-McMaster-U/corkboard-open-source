@@ -135,7 +135,6 @@ This document provides the input and output specification for all of Corkboard's
 - Creates an event with the provided fields. The associated venue must be created before this endpoint is used, otherwise the endpoint will fail
 - Errors if the JWT Token is invalid, the associated venue does not exist.
 - ##### Request Headers
-    - `Authorization: "Bearer <JWT Token>"`
     - `Content-Type: "application/json"`
     - `Accept: "application/json"`
 - ##### Request Body
@@ -201,7 +200,6 @@ This document provides the input and output specification for all of Corkboard's
 - Errors if no name or an already existing name is passed
 
 - ##### Request Headers
-    - `Authorization: "Bearer <JWT Token>"`
     - `Content-Type: "application/json"`
     - `Accept: "application/json"`
 - ##### Request Body
@@ -290,7 +288,6 @@ This document provides the input and output specification for all of Corkboard's
 - Creates a venue with the provided information
 - Errors if the name is undefined
 - ##### Request Headers
-    - `Authorization: "Bearer <JWT Token>"`
     - `Content-Type: "application/json"`
     - `Accept: "application/json"`
 - ##### Request Body
