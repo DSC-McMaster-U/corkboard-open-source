@@ -32,7 +32,7 @@ describe("GET /api/venues", () => {
 
     it("should return a single venue if a valid id is passed", async () => {
         let response = await request(app).get(
-            path + "?id=1154dd33-674e-4494-afac-594968579624"
+            path + "?id=1154dd33-674e-4494-afac-594968579624",
         );
 
         let venue = {
@@ -49,7 +49,7 @@ describe("GET /api/venues", () => {
 
     it("should return a single venue if a valid id is passed with a limit", async () => {
         let response = await request(app).get(
-            path + "?id=1154dd33-674e-4494-afac-594968579624"
+            path + "?id=1154dd33-674e-4494-afac-594968579624",
         );
 
         let venue = {
@@ -118,6 +118,94 @@ describe("POST /api/venues", () => {
             address: "123 Test St.",
             latitude: 0,
             longitude: 0,
+        };
+
+        let response = await request(app).post(path).send(venue);
+
+        logCreatedId(response);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.id).toBeDefined();
+
+        let venueInDb = await request(app).get(path + `?id={body.id}`);
+
+        expect(venuesAreEqual(venue, venueInDb));
+    });
+
+    it("should return 200 for a null venue type", async () => {
+        let venue = {
+            name: "POST-test-venue",
+            venue_type: null,
+            address: "123 Test St.",
+            latitude: 0,
+            longitude: 0,
+        };
+
+        let response = await request(app).post(path).send(venue);
+
+        logCreatedId(response);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.id).toBeDefined();
+
+        let venueInDb = await request(app).get(path + `?id={body.id}`);
+
+        expect(venuesAreEqual(venue, venueInDb));
+    });
+
+    it("should return 200 for a null address", async () => {
+        let venue = {
+            name: "POST-test-venue",
+            venue_type: "bar",
+            address: null,
+            latitude: 0,
+            longitude: 0,
+        };
+
+        let response = await request(app).post(path).send(venue);
+
+        logCreatedId(response);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.id).toBeDefined();
+
+        let venueInDb = await request(app).get(path + `?id={body.id}`);
+
+        expect(venuesAreEqual(venue, venueInDb));
+    });
+
+    it("should return 200 for a null latitude", async () => {
+        let venue = {
+            name: "POST-test-venue",
+            venue_type: "bar",
+            address: "123 Test St.",
+            latitude: null,
+            longitude: 0,
+        };
+
+        let response = await request(app).post(path).send(venue);
+
+        logCreatedId(response);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.id).toBeDefined();
+
+        let venueInDb = await request(app).get(path + `?id={body.id}`);
+
+        expect(venuesAreEqual(venue, venueInDb));
+    });
+
+    it("should return 200 for a null longitude", async () => {
+        let venue = {
+            name: "POST-test-venue",
+            venue_type: "bar",
+            address: "123 Test St.",
+            latitude: 0,
+            longitude: null,
         };
 
         let response = await request(app).post(path).send(venue);

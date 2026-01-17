@@ -93,10 +93,11 @@ describe("POST /api/genres", () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.body.success).toBe(true);
+        expect(response.body.id).toBeDefined();
 
         // Verify the genre was created by fetching it from the database
         const createdGenre = await request(app).get(
-            path + `?name=${genreName}`
+            path + `?name=${genreName}`,
         );
         expect(createdGenre).toBeDefined();
         expect(createdGenre.body.genre.name).toBe(genreName);
