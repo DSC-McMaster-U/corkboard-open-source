@@ -124,6 +124,7 @@ export default function ShowDetailsPage() {
       Linking.openURL(source_url as string);
     }
     // create bookmark for event
+    setIsBookmarked(false);
     handleBookmarkToggle();
   };
 
@@ -297,7 +298,7 @@ export default function ShowDetailsPage() {
           >
             <Ionicons name="ticket-outline" size={20} color="white" />
             <Text className='text-white font-bold text-center text-lg ml-2'>
-              {source_url ? 'Get Tickets' : 'Coming Soon'}
+              Get Tickets
             </Text>
           </TouchableOpacity>
         </View>

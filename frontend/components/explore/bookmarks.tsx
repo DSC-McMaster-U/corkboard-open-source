@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { Text, TouchableOpacity, View, ActivityIndicator, Image } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { apiFetch } from '@/api/api';
+import { apiFetch, getImageUrl } from '@/api/api';
 import { useFocusEffect } from 'expo-router';
 
 // API response types
@@ -44,7 +44,7 @@ interface BookmarkItem {
     id: string;
     title: string;
     type: BookmarkType;
-    emoji: string;
+    image: string | null;
     subtitle: string;
 }
 
@@ -79,28 +79,28 @@ function BookmarkCard({ item, onRemove, isRemoving }: BookmarkCardProps) {
 
     return (
         <TouchableOpacity onPress={handleOnPress} activeOpacity={0.7}>
-            <View className="flex-row items-center bg-secondary rounded-2xl px-4 py-3 mb-3">
-                {/* Emoji Icon */}
-                <View className="w-12 h-12 rounded-xl bg-accent/30 items-center justify-center mr-3">
-                    <Text className="text-2xl">{item.emoji}</Text>
+            <View className="flex-row items-center bg-secondary rounded-xl px-3 py-2 mb-2">
+                {/* Event Image */}
+                <View className="w-10 h-10 rounded-lg overflow-hidden bg-accent/30 items-center justify-center mr-3">
+                    {item.image ? (
+                        <Image
+                            source={{ uri: getImageUrl(item.image) }}
+                            className="w-full h-full"
+                            resizeMode="cover"
+                        />
+                    ) : (
+                        <Text className="text-lg">🎵</Text>
+                    )}
                 </View>
 
                 {/* Content */}
                 <View className="flex-1">
-                    <Text className="text-foreground font-semibold text-base" numberOfLines={1}>
+                    <Text className="text-foreground font-semibold text-sm" numberOfLines={1}>
                         {item.title}
                     </Text>
-                    <View className="flex-row items-center mt-1">
-                        <View
-                            className="px-2 py-0.5 rounded mr-2"
-                            style={{ backgroundColor: typeColors[item.type] }}
-                        >
-                            <Text className="text-xs font-medium text-white">{item.type}</Text>
-                        </View>
-                        <Text className="text-foreground/60 text-xs flex-1" numberOfLines={1}>
-                            {item.subtitle}
-                        </Text>
-                    </View>
+                    <Text className="text-foreground/60 text-xs" numberOfLines={1}>
+                        {item.subtitle}
+                    </Text>
                 </View>
 
                 {/* Bookmark Icon - Toggleable */}
@@ -112,7 +112,7 @@ function BookmarkCard({ item, onRemove, isRemoving }: BookmarkCardProps) {
                 >
                     <Ionicons
                         name="bookmark"
-                        size={18}
+                        size={16}
                         color={isRemoving ? '#999' : '#411900'}
                     />
                 </TouchableOpacity>
@@ -132,19 +132,6 @@ function getDisplayType(venueType: string): BookmarkType {
         other: 'Open Mic',
     };
     return typeMap[venueType] || 'Concert';
-}
-
-// Helper to get emoji based on venue type
-function getEmoji(venueType: string): string {
-    const emojiMap: Record<string, string> = {
-        bar: '🍻',
-        club: '🎧',
-        theater: '🎭',
-        venue: '🎸',
-        outdoor: '🎪',
-        other: '🎤',
-    };
-    return emojiMap[venueType] || '🎵';
 }
 
 // Format date for subtitle
@@ -210,7 +197,7 @@ export function Bookmarks() {
                         id: bookmark.event_id,
                         title: bookmark.events.title,
                         type: getDisplayType(bookmark.events.venues?.venue_type || 'other'),
-                        emoji: getEmoji(bookmark.events.venues?.venue_type || 'other'),
+                        image: bookmark.events.image,
                         subtitle: `${bookmark.events.venues?.name || 'Unknown Venue'} • ${formatDate(bookmark.events.start_time)}`,
                     }));
 
@@ -232,7 +219,7 @@ export function Bookmarks() {
             {/* Header */}
             <View className="flex-row justify-between items-center mb-4">
                 <Text className="text-lg text-foreground font-semibold tracking-wide">
-                    Get Back Into Listening
+                    Events you've bookmarked
                 </Text>
                 <TouchableOpacity>
                     <Text className="text-accent font-medium">View all</Text>
