@@ -93,6 +93,24 @@
 
 **Note:** Images are stored locally in the backend's public directory. Static file serving will be configured in the API branch.
 
+### `archived` (boolean, NOT NULL, default: false)
+**Purpose:** Indicates whether an event has been archived (typically for past events).
+
+**Default:** `false` (not archived)
+
+**Behavior:**
+- Archived events are excluded from `db.events.getAll()` by default
+- Use `includeArchived: true` parameter to include archived events
+- Past events can be automatically archived using `db.events.archivePastEvents()`
+
+**Examples:**
+- `true` - Event is archived (past event, hidden from default listings)
+- `false` - Event is active (visible in default listings)
+
+**Index:** `idx_events_archived` for efficient filtering
+
+**Note:** Added in migration 013. Events are not automatically archived; use `archivePastEvents()` method or archive manually.
+
 ## Venues Table - Location Fields
 
 ### `latitude` (decimal(10, 8), nullable)
@@ -298,6 +316,7 @@ All schema changes are tracked in `supabase/migrations/`:
 - `010_add_user_account_fields.sql` - Add `username`, `profile_picture`, `bio` to users; create `artists` table and user favorites junction tables
 - `011_add_artist_id_to_events.sql` - Replace `artist` VARCHAR column with `artist_id` FK to `artists` table for normalization
 - `012_add_user_account_sample_data.sql` - Add sample user profiles and favorites for testing
+- `013_add_archived_column_to_events.sql` - Add `archived` boolean column to events table for handling past events
 
 **To apply a migration:**
 1. Review migration file
