@@ -59,6 +59,33 @@ export const db = {
 
             return query.limit(limit);
         },
+        add: (
+            title: string,
+            venue_id: string,
+            start_time: string,
+            description?: string | null,
+            cost?: number | null,
+            status?: "published" | "draft" | "hidden",
+            source_type?: "manual" | string | null,
+            source_url?: string | null,
+            ingestion_status?: "success" | "failed" | "pending",
+            artist?: string | null,
+            image?: string | null
+        ) =>    
+            supabase.from("events").insert({
+                title,
+                venue_id,
+                start_time,
+                description,
+                cost,
+                status,
+                source_type,
+                source_url,
+                ingestion_status,
+                artist,
+                image
+            }),
+         
 
         // get events by id
         getById: (eventId: string) =>

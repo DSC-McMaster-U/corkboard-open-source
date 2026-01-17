@@ -5,13 +5,14 @@ import { Feather } from "@expo/vector-icons";
 
 type Which = "start" | "end";
 
+type DateRangePickerProps = {
+  dateRange: [Date, Date];
+  setDateRange: (r: [Date, Date]) => void;
+}
+
 export default function DateRangePicker({
-  onChange,
-}: {
-  onChange?: (r: { start: Date | null; end: Date | null }) => void;
-}) {
-  const [start, setStart] = useState<Date | null>(() => new Date());
-  const [end, setEnd] = useState<Date | null>(() => new Date());
+  dateRange, setDateRange
+}: DateRangePickerProps) {
   const [which, setWhich] = useState<Which>("start");
   const [visible, setVisible] = useState(false);
 
@@ -31,11 +32,9 @@ export default function DateRangePicker({
 
   const handleConfirm = (date: Date) => {
     if (which === "start") {
-      setStart(date);
-      onChange?.({ start: date, end });
+      setDateRange([date, dateRange[1]])
     } else {
-      setEnd(date);
-      onChange?.({ start, end: date });
+      setDateRange([dateRange[0], date])
     }
     close();
   };
@@ -48,7 +47,7 @@ export default function DateRangePicker({
             <Feather name="calendar" style={{ color: '#411900' }} size={16} />
             <Text style={styles.label}>Start date:</Text>
           </View>
-          <Text style={[styles.value, { color: "#411900" }]}>{fmt(start)}</Text>
+          <Text style={[styles.value, { color: "#411900" }]}>{fmt(dateRange[0])}</Text>
         </Pressable>
 
         <Pressable style={styles.btn} onPress={() => open("end")}>
@@ -56,7 +55,7 @@ export default function DateRangePicker({
             <Feather name="calendar" style={{ color: '#411900' }} size={16} />
             <Text style={styles.label} >End date:</Text>
           </View>
-          <Text style={[styles.value, { color: "#411900" }]}>{fmt(end)}</Text>
+          <Text style={[styles.value, { color: "#411900" }]}>{fmt(dateRange[1])}</Text>
         </Pressable>
       </View>
 
@@ -65,7 +64,7 @@ export default function DateRangePicker({
         mode="date"
         onConfirm={handleConfirm}
         onCancel={close}
-        date={(which === "start" ? start : end) ?? new Date()}
+        date={(which === "start" ? dateRange[0] : dateRange[1]) ?? new Date()}
         display={Platform.select({ ios: "inline", android: "calendar" })}
       />
     </View>

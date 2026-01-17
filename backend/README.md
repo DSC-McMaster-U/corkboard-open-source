@@ -1,12 +1,14 @@
-# Corkboard Backend - Week 3
+# Corkboard Backend
 
 ## Quick Start
 
 ### **1. Get Supabase Access**
-- Project URL: `https://supabase.com/dashboard/project/dniawpahwcqtvcnaaexv`
-- Ask Billy to invite you to the Supabase project (if you haven't already done so!)
+
+-   Project URL: `https://supabase.com/dashboard/project/dniawpahwcqtvcnaaexv`
+-   Ask Billy to invite you to the Supabase project (if you haven't already done so!)
 
 ### **2. Local Setup**
+
 ```bash
 cd backend/
 cp env.example .env
@@ -14,10 +16,11 @@ npm install
 npm run dev
 ```
 
-### **3. Test Endpoints**
-- Health: `http://localhost:3000/api/health`
-- Events: `http://localhost:3000/api/events`
-- Venues: `http://localhost:3000/api/venues`
+### **3. Test Health**
+
+```bash
+curl http://localhost:3000/api/health
+```
 
 ## Project Structure
 
@@ -26,16 +29,27 @@ npm run dev
 ```
 src/
 ├── app.ts              # Main entry point
+├── meta.cts
 ├── routes/             # API endpoints (RESTful APIs)
+│   ├── auth.ts
+│   ├── bookmarks.ts
 │   ├── events.ts
-│   ├── venues.ts
-│   └── health.ts
+│   ├── genres.ts
+│   ├── health.ts
+│   ├── users.ts
+│   └── venues.ts
 ├── services/           # Business logic
+│   ├── authService.ts
 │   ├── eventService.ts
-│   ├── venueService.ts
-│   └── healthService.ts
-└── db/                 # Database access
-    └── supabaseClient.ts
+│   ├── genreService.ts
+│   ├── healthService.ts
+│   ├── userService.ts
+│   └── venueService.ts
+├── db/                 # Database client
+|   └── supabaseClient.ts
+└── utils/              # General Utilities
+    ├── cmp.ts
+    └── parser.ts
 ```
 
 **Request Flow:** Route → Service → Database → Supabase
@@ -45,15 +59,26 @@ src/
 **Tables:** venues, events, users, genres, user_bookmarks, event_genres  
 **Sample Data:** 4 venues, 3 events, 7 genres loaded
 
-## API Endpoints (current)
+## API Endpoints
 
-- `GET /api/health` - Health check
-- `GET /api/events` - List events
-- `GET /api/venues` - List venues
+-   `GET /api/health` - Health check
+-   `GET /api/events` - Get events
+-   `POST /api/events` - Create an event
+-   `GET /api/users` - Parse user from JWT token
+-   `GET /api/venues` - Get venues
+-   `POST /api/venues` - Create a venue
+-   `GET /api/bookmarks/` - Get bookmarks
+-   `POST /api/bookmarks/` - Create a bookmark
+-   `DELETE /api/bookmarks/` - Delete a bookmark
+-   `GET /api/genres/` - Get genres
+-   `POST /api/genres/` - Create a genre
+
+Endpoint documentation is available at api-docs.md.
 
 ## Development
 
 **Adding Features:**
+
 1. Create route file in `routes/`
 2. Create service file in `services/`
 3. Add route to `app.ts`
@@ -62,10 +87,11 @@ src/
 ## Future Enhancements
 
 **Post-MVP Considerations:**
-- **Prisma ORM**
-- **Web Scraping**
-- **Geographic Features**
-- **Advanced Features**
-- **Testing**
+
+-   **Prisma ORM**
+-   **Web Scraping**
+-   **Geographic Features**
+-   **Advanced Features**
+-   **Testing**
 
 **Note:** Current structure supports all of these, as database layer is isolated, routes/services are modular. Add enhancements as needed without major refactoring.

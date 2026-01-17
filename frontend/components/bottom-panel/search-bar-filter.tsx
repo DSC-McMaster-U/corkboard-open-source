@@ -58,7 +58,7 @@ export default function SearchBarFilter({
           placeholderTextColor="#666"
         />
 
-        <Pressable onPress={() => { dismiss(); onSearch?.({ query: q, filter: f }); }} hitSlop={8}>
+        <Pressable onPress={() => { dismiss(); onSearch?.({ query: q, filter: f }); }} hitSlop={12}>
           <Feather name="search" style={{ color: '#411900' }} size={18} />
         </Pressable>
       </View>
