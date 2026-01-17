@@ -9,7 +9,7 @@ export const genresService = {
     getByName: async (name: string) => {
         const { data, error } = await db.genres.getByName(name);
         if (error) throw error;
-        return data || [];
+        return data; // If name is not found the data outputted should be undefined
     },
     create: async (name: string) => {
         const { data, error } = await db.genres.create(name);

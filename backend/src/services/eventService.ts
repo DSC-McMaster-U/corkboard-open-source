@@ -27,7 +27,8 @@ export const eventService = {
         status?: string,
         source_type?: string,
         source_url?: string,
-        image?: string
+        image?: string,
+        artist_id?: string
     ) => {
         const { data, error } = await db.events.create({
             title: title,
@@ -39,6 +40,7 @@ export const eventService = {
             source_type: source_type,
             source_url: source_url,
             image: image,
+            artist_id: artist_id,
         });
 
         if (error) throw error;

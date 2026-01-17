@@ -25,4 +25,14 @@ const parseFloatOr = (val: string | undefined, def: number): number =>
 const parseDateOr = (val: string | undefined, def: Date): Date =>
     genericParse(val, def, (v) => new Date(v));
 
-export { parseIntOr, parseFloatOr, parseDateOr };
+const titleCaseStr = (str: string): string =>
+    str
+        .split(" ")
+        .map((subStr: string) => {
+            return (
+                subStr.charAt(0).toUpperCase() + subStr.slice(1).toLowerCase()
+            );
+        })
+        .join(" ");
+
+export { parseIntOr, parseFloatOr, parseDateOr, titleCaseStr };
