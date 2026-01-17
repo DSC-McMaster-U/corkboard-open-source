@@ -13,10 +13,14 @@ function ShowCard({ show }: ShowCardProps) {
   const imageUri = show.image ? getImageUrl(show.image) : PLACEHOLDER_IMAGE;
 
   const handlePress = () => {
+    // Extract genre names from the event_genres array
+    const genreNames = show.event_genres?.map((g) => g.genres.name) || [];
+
     router.push({
       pathname: '/shows/[showName]',
       params: {
         showName: show.title,
+        event_id: show.id.toString(),
         artist: show.artist,
         description: show.description,
         start_time: show.start_time,
@@ -24,7 +28,9 @@ function ShowCard({ show }: ShowCardProps) {
         image: show.image,
         venue_name: show.venues?.name,
         venue_address: show.venues?.address,
-        source_url: show.source_url
+        venue_type: show.venues?.venue_type,
+        source_url: show.source_url,
+        genres: JSON.stringify(genreNames),
       },
     });
   };
@@ -55,7 +61,7 @@ export function ExploreShows() {
 
   // fetching event data from backend
   const eventLimit = 8;
-  
+
   useEffect(() => {
     const controller = new AbortController();
     let isMounted = true;
@@ -65,10 +71,10 @@ export function ExploreShows() {
       setError(null);
       try {
         const res = await apiFetch<EventList>(`api/events?limit=${eventLimit}`,
-          { signal: controller.signal}
+          { signal: controller.signal }
         );
         if (isMounted) {
-          console.log("Fetched events:", res.events);
+          //console.log("Fetched events:", res.events);
           setShows(res.events || []);
         }
       } catch (err: any) {
@@ -111,8 +117,8 @@ export function ExploreShows() {
 
   return (
     <View>
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         className='flex-row'
       >
