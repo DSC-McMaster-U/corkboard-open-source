@@ -11,24 +11,24 @@ export const bookmarkService = {
         if (eventError || !event) {
             throw new Error("Event not found");
         }
-        
-        // check if already bookmarked
+
+        // check if already bookmarked - if so, return success (idempotent)
         const { data: existing } = await db.bookmarks.exists(userId, eventId);
         if (existing) {
-            throw new Error("Event already bookmarked");
+            return existing; // Already bookmarked, return existing record
         }
-        
+
         const { data, error } = await db.bookmarks.create(userId, eventId);
         if (error) throw error;
         return data;
     },
     removeBookmark: async (userId: string, eventId: string) => {
-        // check if bookmark exists
+        // check if bookmark exists - if not, succeed silently (idempotent)
         const { data: existing } = await db.bookmarks.exists(userId, eventId);
         if (!existing) {
-            throw new Error("Bookmark not found");
+            return true; // Already removed or never existed, return success
         }
-        
+
         const { error } = await db.bookmarks.delete(userId, eventId);
         if (error) throw error;
         return true;
