@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Linking } from 'react-native';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { getImageUrl, apiFetch } from '@/api/api';
 import { LinearGradient } from 'expo-linear-gradient';
+
+interface BookmarkResponse {
+  bookmarks: Array<{ event_id: string }>;
+}
 
 export default function ShowDetailsPage() {
   const {
@@ -24,6 +28,28 @@ export default function ShowDetailsPage() {
 
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
+
+  // Check if event is already bookmarked on mount
+  useEffect(() => {
+    if (!event_id) return;
+
+    const checkBookmarkStatus = async () => {
+      try {
+        const response = await apiFetch<BookmarkResponse>('api/bookmarks', {
+          headers: { Authorization: 'TESTING_BYPASS' },
+        });
+
+        const isAlreadyBookmarked = response.bookmarks.some(
+          (bookmark) => bookmark.event_id === event_id
+        );
+        setIsBookmarked(isAlreadyBookmarked);
+      } catch (err) {
+        console.error('Failed to check bookmark status:', err);
+      }
+    };
+
+    checkBookmarkStatus();
+  }, [event_id]);
 
   // Get the proper image URL
   const imageUri = image ? getImageUrl(image as string) : null;
@@ -141,9 +167,6 @@ export default function ShowDetailsPage() {
                   size={22}
                   color={isBookmarked ? "#C4A484" : "white"}
                 />
-              </TouchableOpacity>
-              <TouchableOpacity className='bg-black/40 rounded-full p-2.5 backdrop-blur-sm'>
-                <Ionicons name="share-outline" size={22} color="white" />
               </TouchableOpacity>
             </View>
           </View>

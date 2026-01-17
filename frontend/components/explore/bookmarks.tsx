@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { apiFetch } from '@/api/api';
+import { useFocusEffect } from 'expo-router';
 
 // API response types
 interface Venue {
@@ -191,38 +192,40 @@ export function Bookmarks() {
         }
     };
 
-    useEffect(() => {
-        const fetchBookmarks = async () => {
-            try {
-                setLoading(true);
-                setError(null);
+    useFocusEffect(
+        useCallback(() => {
+            const fetchBookmarks = async () => {
+                try {
+                    setLoading(true);
+                    setError(null);
 
-                const response = await apiFetch<ApiBookmarksResponse>('api/bookmarks', {
-                    headers: {
-                        Authorization: 'TESTING_BYPASS',
-                    },
-                });
+                    const response = await apiFetch<ApiBookmarksResponse>('api/bookmarks', {
+                        headers: {
+                            Authorization: 'TESTING_BYPASS',
+                        },
+                    });
 
-                // Transform API response to display format
-                const transformedBookmarks: BookmarkItem[] = response.bookmarks.map((bookmark) => ({
-                    id: bookmark.event_id,
-                    title: bookmark.events.title,
-                    type: getDisplayType(bookmark.events.venues?.venue_type || 'other'),
-                    emoji: getEmoji(bookmark.events.venues?.venue_type || 'other'),
-                    subtitle: `${bookmark.events.venues?.name || 'Unknown Venue'} • ${formatDate(bookmark.events.start_time)}`,
-                }));
+                    // Transform API response to display format
+                    const transformedBookmarks: BookmarkItem[] = response.bookmarks.map((bookmark) => ({
+                        id: bookmark.event_id,
+                        title: bookmark.events.title,
+                        type: getDisplayType(bookmark.events.venues?.venue_type || 'other'),
+                        emoji: getEmoji(bookmark.events.venues?.venue_type || 'other'),
+                        subtitle: `${bookmark.events.venues?.name || 'Unknown Venue'} • ${formatDate(bookmark.events.start_time)}`,
+                    }));
 
-                setBookmarks(transformedBookmarks);
-            } catch (err) {
-                console.error('Failed to fetch bookmarks:', err);
-                setError(err instanceof Error ? err.message : 'Failed to load bookmarks');
-            } finally {
-                setLoading(false);
-            }
-        };
+                    setBookmarks(transformedBookmarks);
+                } catch (err) {
+                    console.error('Failed to fetch bookmarks:', err);
+                    setError(err instanceof Error ? err.message : 'Failed to load bookmarks');
+                } finally {
+                    setLoading(false);
+                }
+            };
 
-        fetchBookmarks();
-    }, []);
+            fetchBookmarks();
+        }, [])
+    );
 
     return (
         <View>
