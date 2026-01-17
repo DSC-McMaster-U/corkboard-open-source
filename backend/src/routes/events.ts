@@ -39,13 +39,17 @@ router.get("/", async (req: Request, res: Response) => {
 
     const radius = parseIntOr(req.query.radius as string | undefined, 10);
 
+    const includeArchived =
+        req.query.include_archived === "true";
+
     eventService
         .getAllEvents(
             limit,
             min_start_time.toISOString(),
             max_start_time.toISOString(),
             min_cost,
-            max_cost
+            max_cost,
+            includeArchived
         )
         .then((events) => {
             res.status(200).json({ events: events, count: events.length });

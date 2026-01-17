@@ -21,7 +21,8 @@ export const db = {
             min_start_time: string,
             max_start_time: string,
             min_cost: number,
-            max_cost: number
+            max_cost: number,
+            includeArchived: boolean = false
         ) => {
             let query = supabase
                 .from("events")
@@ -53,6 +54,11 @@ export const db = {
                 )
                 .gte("start_time", min_start_time)
                 .lte("start_time", max_start_time);
+
+            // filter out archived events by default
+            if (!includeArchived) {
+                query = query.eq("archived", false);
+            }
 
             // handle NULL costs: only filter by cost if user specified a range
             const isDefaultCostRange =
@@ -116,6 +122,32 @@ export const db = {
         // delete event by ID
         deleteById: (eventId: string) =>
             supabase.from("events").delete().eq("id", eventId),
+
+        // archive an event by ID
+        archiveById: (eventId: string) =>
+            supabase
+                .from("events")
+                .update({ archived: true })
+                .eq("id", eventId)
+                .select()
+                .single(),
+
+        // unarchive an event by ID
+        unarchiveById: (eventId: string) =>
+            supabase
+                .from("events")
+                .update({ archived: false })
+                .eq("id", eventId)
+                .select()
+                .single(),
+
+        // archive all past events
+        archivePastEvents: () =>
+            supabase
+                .from("events")
+                .update({ archived: true })
+                .lt("start_time", new Date().toISOString())
+                .eq("archived", false),
     },
     venues: {
         getAll: (limit = 10) =>

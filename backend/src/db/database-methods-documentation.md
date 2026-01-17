@@ -20,7 +20,7 @@ This document describes all available database methods in `supabaseClient.ts` fo
 
 ## Events
 
-### `db.events.getAll(limit, min_start_time, max_start_time, min_cost, max_cost)`
+### `db.events.getAll(limit, min_start_time, max_start_time, min_cost, max_cost, includeArchived?)`
 
 **Purpose:** Retrieve a filtered list of events with related data (venues, genres, artists).
 
@@ -30,22 +30,34 @@ This document describes all available database methods in `supabaseClient.ts` fo
 - `max_start_time` (string): ISO timestamp - events must start on or before this time
 - `min_cost` (number): Minimum event cost (use `0` for no minimum)
 - `max_cost` (number): Maximum event cost (use `Number.MAX_VALUE` for no maximum)
+- `includeArchived` (boolean, optional, default: `false`): If `true`, includes archived events. By default, archived events are excluded.
 
 **Returns:** Supabase query object with events including:
-- Event fields: `id`, `title`, `description`, `start_time`, `cost`, `status`, `image`, `artist_id`, etc.
+- Event fields: `id`, `title`, `description`, `start_time`, `cost`, `status`, `image`, `artist_id`, `archived`, etc.
 - Nested `venues`: `id`, `name`, `address`, `venue_type`, `latitude`, `longitude`
 - Nested `event_genres`: `genre_id` with nested `genres` (`id`, `name`)
 - Nested `artists`: `id`, `name`, `bio`, `image`
 
 **Usage Example:**
 ```typescript
-// Get events in the next 30 days, cost between $10-$50
+// Get events in the next 30 days, cost between $10-$50 (excludes archived events)
 const { data, error } = await db.events.getAll(
     20, // limit
     new Date().toISOString(), // min_start_time (now)
     new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // max_start_time (30 days)
     10, // min_cost
-    50  // max_cost
+    50, // max_cost
+    false // includeArchived (default: false)
+);
+
+// Include archived events
+const { data: allEvents, error } = await db.events.getAll(
+    20,
+    new Date("1970-01-01").toISOString(),
+    new Date("2999-12-31").toISOString(),
+    0,
+    Number.MAX_VALUE,
+    true // includeArchived = true
 );
 ```
 
@@ -132,6 +144,69 @@ const { error } = await db.events.deleteById("123e4567-e89b-12d3-a456-4266141740
 **When to Use:**
 - Backend: Event deletion endpoint (DELETE `/api/events/:id`)
 - Testing: Cleanup test data
+
+---
+
+### `db.events.archiveById(eventId)`
+
+**Purpose:** Archive a single event by ID (sets `archived = true`).
+
+**Parameters:**
+- `eventId` (string): UUID of the event to archive
+
+**Returns:** Supabase query object with updated event
+
+**Usage Example:**
+```typescript
+const { data, error } = await db.events.archiveById("123e4567-e89b-12d3-a456-426614174000");
+```
+
+**When to Use:**
+- Backend: Archive event endpoint (POST `/api/events/:id/archive`)
+- Admin: Manually archiving specific events
+
+---
+
+### `db.events.unarchiveById(eventId)`
+
+**Purpose:** Unarchive a single event by ID (sets `archived = false`).
+
+**Parameters:**
+- `eventId` (string): UUID of the event to unarchive
+
+**Returns:** Supabase query object with updated event
+
+**Usage Example:**
+```typescript
+const { data, error } = await db.events.unarchiveById("123e4567-e89b-12d3-a456-426614174000");
+```
+
+**When to Use:**
+- Backend: Unarchive event endpoint (POST `/api/events/:id/unarchive`)
+- Admin: Restoring archived events
+
+---
+
+### `db.events.archivePastEvents()`
+
+**Purpose:** Archive all past events (where `start_time < NOW()` and `archived = false`).
+
+**Parameters:** None
+
+**Returns:** Supabase query object with count of archived events
+
+**Usage Example:**
+```typescript
+// Archive all past events
+const { data, error } = await db.events.archivePastEvents();
+```
+
+**When to Use:**
+- Scheduled job: Automatically archive past events (e.g., daily cron job)
+- Admin: Manual bulk archiving of past events
+- Migration: One-time archive of existing past events
+
+**Note:** This method only archives events that are not already archived (`archived = false`).
 
 ---
 
@@ -940,8 +1015,11 @@ const { data, error } = await db.healthCheck();
 ### ❌ Missing / Not Yet Implemented
 
 1. **Event Archiving:**
-   - ❌ No method to archive/delete events after their date
-   - **Recommendation:** Add `db.events.archivePastEvents()` or filter in `getAll()` by default
+   - ✅ `archived` column added to `events` table
+   - ✅ `db.events.getAll()` filters archived events by default
+   - ✅ `db.events.archiveById()` - Archive single event
+   - ✅ `db.events.unarchiveById()` - Unarchive single event
+   - ✅ `db.events.archivePastEvents()` - Archive all past events
 
 ---
 

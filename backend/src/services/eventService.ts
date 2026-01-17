@@ -6,14 +6,16 @@ export const eventService = {
         min_start_time: string,
         max_start_time: string,
         min_cost: number,
-        max_cost: number
+        max_cost: number,
+        includeArchived: boolean = false
     ) => {
         const { data, error } = await db.events.getAll(
             limit,
             min_start_time,
             max_start_time,
             min_cost,
-            max_cost
+            max_cost,
+            includeArchived
         );
         if (error) throw error;
         return data ?? [];
@@ -46,5 +48,19 @@ export const eventService = {
         if (error) throw error;
         return data;
     },
-    // Add more event service methods here
+    archiveEvent: async (eventId: string) => {
+        const { data, error } = await db.events.archiveById(eventId);
+        if (error) throw error;
+        return data;
+    },
+    unarchiveEvent: async (eventId: string) => {
+        const { data, error } = await db.events.unarchiveById(eventId);
+        if (error) throw error;
+        return data;
+    },
+    archivePastEvents: async () => {
+        const { data, error } = await db.events.archivePastEvents();
+        if (error) throw error;
+        return data;
+    },
 };
