@@ -29,6 +29,39 @@ export default function ShowDetailsPage() {
     event_id,
   } = useLocalSearchParams();
 
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
+
+  // Check if event is already bookmarked on mount
+  useEffect(() => {
+    if (!event_id) return;
+
+    const checkBookmarkStatus = async () => {
+      try {
+        const response = await apiFetch<BookmarkResponse>('api/bookmarks', {
+          headers: { Authorization: 'TESTING_BYPASS' },
+        });
+
+        const isAlreadyBookmarked = response.bookmarks.some(
+          (bookmark) => bookmark.event_id === event_id
+        );
+        setIsBookmarked(isAlreadyBookmarked);
+      } catch (err) {
+        console.error('Failed to check bookmark status:', err);
+      }
+    };
+
+    checkBookmarkStatus();
+  }, [event_id]);
+
+  // Get the proper image URL
+  const imageUri = image ? getImageUrl(image as string) : null;
+  const PLACEHOLDER_IMAGE = "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b";
+
+  // Parse genres if passed as JSON string
+  const parsedGenres: string[] = genres
+    ? JSON.parse(genres as string)
+    : [];
 
   // Format date to be more readable
   const formatDate = (dateString: string | string[]) => {
@@ -101,7 +134,7 @@ export default function ShowDetailsPage() {
         latitude: venue_latitude,
         longitude: venue_longtidue,
         source_url: source_url, // temp
-        image: null,
+        image: image, // temp uses event image
         description: null
       },
     });
