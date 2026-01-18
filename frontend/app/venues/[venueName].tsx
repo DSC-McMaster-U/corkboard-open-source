@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { EventData, EventList } from '@/constants/types';
 import { apiFetch, getImageUrl } from '@/api/api';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function VenuePage() {
   const { 
@@ -24,10 +25,13 @@ export default function VenuePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // fetching event data from backend
+  const [isFavourite, setIsFavourite] = useState(false);
+  const [favouriteLoading, setFavouriteLoading] = useState(false);
+
   const eventLimit = 100;
   
   useEffect(() => {
+    // fetching event data from backend
     const controller = new AbortController();
     let isMounted = true;
 
@@ -76,8 +80,67 @@ export default function VenuePage() {
       controller.abort();
       isMounted = false;
     };
+
+    // check if already favourited on mount
+      if (!venueID) return;
+      setIsFavourite(false); // Placeholder until backend is implemented
+      setFavouriteLoading(false);
+      // const checkBookmarkStatus = async () => {
+      //   try {
+      //     const response = await apiFetch<BookmarkResponse>('api/bookmarks', {
+      //       headers: { Authorization: 'TESTING_BYPASS' },
+      //     });
+
+      //     const isAlreadyBookmarked = response.bookmarks.some(
+      //       (bookmark) => bookmark.event_id === event_id
+      //     );
+      //     setIsBookmarked(isAlreadyBookmarked);
+      //   } catch (err) {
+      //     console.error('Failed to check bookmark status:', err);
+      //   }
+      // };
+      // checkBookmarkStatus();
   }, [venueID]);
 
+  // Get venue type emoji
+  const getVenueEmoji = (type: string | undefined) => {
+    const emojiMap: Record<string, string> = {
+      bar: '🍻',
+      club: '🎧',
+      theater: '🎭',
+      venue: '🎸',
+      outdoor: '🎪',
+      other: '🎤',
+    };
+    return emojiMap[type || 'other'] || '📍';
+  };
+
+  const handleFavouriteToggle = async () => {
+    if (!venueID) return;
+
+    setFavouriteLoading(true);
+    try {
+      // if (isFavourite) {
+      //   await apiFetch('api/bookmarks', {
+      //     method: 'DELETE',
+      //     headers: { Authorization: 'TESTING_BYPASS' },
+      //     body: JSON.stringify({ venueID: venueID }),
+      //   });
+      // } else {
+      //   await apiFetch('api/bookmarks', {
+      //     method: 'POST',
+      //     headers: { Authorization: 'TESTING_BYPASS' },
+      //     body: JSON.stringify({ venueID: venueID }),
+      //   });
+      // }
+      setIsFavourite(!isFavourite);
+    } catch (err: any) {
+      console.error('Bookmark toggle failed:', JSON.stringify(err, null, 2));
+      console.error('Venue ID was:', venueID);
+    } finally {
+      setFavouriteLoading(false);
+    }
+  };
 
   const handleOpenSite = async () => {
     if (source_url == null) { return }
@@ -106,19 +169,59 @@ export default function VenuePage() {
     ? normalizedVenueType.charAt(0).toUpperCase() + normalizedVenueType.slice(1)
     : "TBD";
 
+  const imageUri = image ? getImageUrl(image as string) : null;
+  const PLACEHOLDER_IMAGE = "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b";
+
   return (
     <>
       <StatusBar style='light'/>
       <Stack.Screen options={{ headerShown: false }} />
+
+      {/* Hero banner with image */}
+
       
       {/* Header with back button and venue name */}
       <View className='bg-accent'>
-        <View className='px-6 py-6 h-[28vh] justify-between'>
-          <TouchableOpacity onPress={() => router.back()} className='mt-12'>
-            <Ionicons name="arrow-back" size={26} color="white" />
-          </TouchableOpacity>
-          <View>
-            <Text className='text-background font-bold text-4xl leading-tight mb-2'>
+        <View className='relative h-[42vh]'>
+          <Image
+            source={{ uri: imageUri || PLACEHOLDER_IMAGE }}
+            className='w-full h-full'
+            resizeMode='cover'
+          />
+          {/* Gradient Overlay */}
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.95)']}
+            locations={[0.2, 0.6, 1]}
+            className='absolute inset-0'
+          />
+
+          {/* Top Bar - Back & Actions */}
+          <View className='absolute top-14 left-0 right-0 px-5 flex-row justify-between items-center'>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className='bg-black/40 rounded-full p-2.5 backdrop-blur-sm'
+            >
+              <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+
+            <View className='flex-row gap-3'>
+              <TouchableOpacity
+                onPress={handleFavouriteToggle}
+                disabled={favouriteLoading}
+                className='bg-black/40 rounded-full p-2.5 backdrop-blur-sm'
+              >
+                <Ionicons
+                  name={isFavourite ? "star" : "star-outline"}
+                  size={22}
+                  color={isFavourite ? "#C4A484" : "white"}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Event Title & Artist */}
+          <View className='absolute bottom-0 left-0 right-0 px-6 pb-6'>
+            <Text className='text-white font-bold text-3xl leading-tight mb-1'>
               {venueName}
             </Text>
           </View>
@@ -128,40 +231,28 @@ export default function VenuePage() {
       <View className='bg-background flex-1'>
         <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
           {/* Venue Details */}
-          <View className='px-6 py-8 border-b border-secondary/50'>
-            
-            {/* Adress */}
-            <View className='flex-row items-start mb-5'>
-              <View className='mt-0.5'>
-                <Ionicons name="location-outline" size={22} color="#9ca3af" />
+          <View className='px-4 py-4'>
+            <View className='bg-secondary/50 rounded-2xl p-4 flex-row items-center'>
+              <View className='w-12 h-12 rounded-xl bg-accent/20 items-center justify-center mr-4'>
+                <Text className='text-2xl'>{getVenueEmoji(venueType as string)}</Text>
               </View>
-              <View className='ml-4 flex-1'>
-                <Text className='text-foreground text-base font-semibold leading-relaxed'>
-                  {'Adress'}
+              <View className='flex-1'>
+                <Text className='text-foreground font-semibold text-base'>
+                  {processedVenueType}
                 </Text>
-                <Text className='text-muted-foreground text-sm mt-0 leading-relaxed'>
-                  {address || 'TBD'}
-                </Text>
+                {address && (
+                  <View className='flex-row items-start'>
+                    <Ionicons name="location-outline" size={18} color="#000000" />
+                    <Text className='text-muted-foreground ml-2 text-sm mt-0.5'>
+                      {address}
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
-
-            {/* Venue type */}
-            {venueType && (
-              <View className='flex-row items-center'>
-                <View className='mt-0.5'>
-                  <Ionicons name="chatbox-ellipses-outline" size={22} color="#9ca3af" />
-                </View>
-                <View className='ml-4 flex-1'>
-                  <Text className='text-foreground text-base font-semibold leading-relaxed'>
-                    {'Venue Type'}
-                  </Text>
-                  <Text className='text-muted-foreground text-sm mt-0 leading-relaxed'>
-                    {processedVenueType}
-                  </Text>
-                </View>
-              </View>
-            )}
           </View>
+
+          <View className='border-b border-secondary/50' />
 
           {/* About */}
           {description && (
