@@ -17,6 +17,7 @@ export default function ShowDetailsPage() {
     source_url 
   } = useLocalSearchParams();
 
+
   // Format date to be more readable
   const formatDate = (dateString: string | string[]) => {
     const date = new Date(dateString as string);
