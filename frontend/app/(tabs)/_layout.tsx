@@ -13,7 +13,7 @@ export default function TabLayout() {
   const theme = Colors[colorScheme ?? 'light'];
 
   const lightBar = '#F5E2D2';
-  const darkBar  = '#111111';
+  const darkBar = '#111111';
 
   const size = 26;
 
@@ -41,7 +41,7 @@ export default function TabLayout() {
         }}
       /> */}
       <Tabs.Screen
-        name="explore"
+        name="index"
         options={{
           title: 'Explore',
           tabBarIcon: ({ color }) => (
