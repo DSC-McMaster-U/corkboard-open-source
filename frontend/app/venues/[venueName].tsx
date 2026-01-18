@@ -117,10 +117,13 @@ export default function VenuePage() {
           <TouchableOpacity onPress={() => router.back()} className='mt-12'>
             <Ionicons name="arrow-back" size={26} color="white" />
           </TouchableOpacity>
-          <View>
+          <View className='flex-row justify-between'>
             <Text className='text-background font-bold text-4xl leading-tight mb-2'>
               {venueName}
             </Text>
+            <View>
+              <Ionicons name="star-outline" size={36} color="#000000" />
+            </View>
           </View>
         </View>
       </View>

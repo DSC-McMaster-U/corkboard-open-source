@@ -225,7 +225,7 @@ export default function MapScreen() {
               onPress={() => {
                 handleVenuePress(v);
               }}
-              pinColor={'blue'}
+              //image={}  switch to images for markers eventually
             />
           ))}
         </MapView>
