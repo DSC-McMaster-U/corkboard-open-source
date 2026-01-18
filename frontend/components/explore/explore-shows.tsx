@@ -20,17 +20,20 @@ function ShowCard({ show }: ShowCardProps) {
       pathname: '/shows/[showName]',
       params: {
         showName: show.title,
-        event_id: show.id.toString(),
-        artist: show.artist,
         description: show.description,
+        artist: show.artist,
         start_time: show.start_time,
         cost: show.cost,
         image: show.image,
         venue_name: show.venues?.name,
+        venue_id: show.venues?.id,
         venue_address: show.venues?.address,
+        venue_latitude: show.venues?.latitude,
+        venue_longtidue: show.venues?.longitude,
         venue_type: show.venues?.venue_type,
         source_url: show.source_url,
         genres: JSON.stringify(genreNames),
+        event_id: show.id.toString(),
       },
     });
   };

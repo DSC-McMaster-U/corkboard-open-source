@@ -34,17 +34,20 @@ function BookmarkCard({ event, onRemove, isRemoving, hasFailed }: BookmarkCardPr
             pathname: '/shows/[showName]',
             params: {
                 showName: event.title,
-                event_id: event.id.toString(),
-                artist: event.artist,
                 description: event.description,
                 start_time: event.start_time,
                 cost: event.cost,
+                artist: event.artist,
                 image: event.image,
                 venue_name: event.venues?.name,
+                venue_id: event.venues?.id,
                 venue_address: event.venues?.address,
+                venue_latitude: event.venues?.latitude,
+                venue_longtidue: event.venues?.longitude,
                 venue_type: event.venues?.venue_type,
                 source_url: event.source_url,
                 genres: JSON.stringify(genreNames),
+                event_id: event.id.toString(),
             },
         });
     };

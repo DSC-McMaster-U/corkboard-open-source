@@ -19,7 +19,10 @@ export default function ShowDetailsPage() {
     artist,
     image,
     venue_name,
+    venue_id,
     venue_address,
+    venue_latitude,
+    venue_longtidue,
     venue_type,
     source_url,
     genres,
@@ -117,6 +120,24 @@ export default function ShowDetailsPage() {
     } finally {
       setBookmarkLoading(false);
     }
+  };
+
+  const handleVenuePress = () => {
+    router.push({
+      pathname: '/venues/[venueName]',
+      params: {
+        venueName: typeof venue_name === 'string' ? venue_name : venue_name?.[0] || '',
+        venueID: venue_id,
+        address: venue_address,
+        created_at: null,
+        venueType: venue_type,
+        latitude: venue_latitude,
+        longitude: venue_longtidue,
+        source_url: source_url, // temp
+        image: null,
+        description: null
+      },
+    });
   };
 
   const handleGetTickets = async () => {
@@ -267,7 +288,7 @@ export default function ShowDetailsPage() {
             <Text className='text-foreground text-lg font-bold mb-3'>
               Venue
             </Text>
-            <TouchableOpacity className='bg-secondary/50 rounded-2xl p-4 flex-row items-center'>
+            <TouchableOpacity onPress={handleVenuePress} className='bg-secondary/50 rounded-2xl p-4 flex-row items-center'>
               <View className='w-12 h-12 rounded-xl bg-accent/20 items-center justify-center mr-4'>
                 <Text className='text-2xl'>{getVenueEmoji(venue_type as string)}</Text>
               </View>
