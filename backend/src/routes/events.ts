@@ -56,72 +56,67 @@ router.get("/", async (req: Request, res: Response) => {
         });
 });
 
-router.post(
-    "/",
-    authService.validateToken, // Currently here to prevent non-authenticated requests
-    async (req: Request, res: Response) => {
-        req.body = req.body ?? {};
+router.post("/", async (req: Request, res: Response) => {
+    req.body = req.body ?? {};
 
-        const {
-            title = undefined,
-            description = undefined,
-            venue_id = undefined,
-            start_time = undefined,
-            status = undefined,
-            source_type = undefined,
-            source_url = undefined,
-        } = req.body;
+    const {
+        title = undefined,
+        description = undefined,
+        venue_id = undefined,
+        start_time = undefined,
+        status = undefined,
+        source_type = undefined,
+        source_url = undefined,
+    } = req.body;
 
-        const cost = parseFloatOr(req.body.cost, 0);
+    const cost = parseFloatOr(req.body.cost, 0);
 
-        if (authService.getUser(res) == undefined) {
-            res.status(401).json({ error: "Unauthorized" });
-            return;
-        }
+    /*if (authService.getUser(res) == undefined) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+    }*/ // Realized auth code is unnessecary here
 
-        if (title == undefined || title === "") {
-            res.status(400).json({ error: "Title is missing" });
-            return;
-        }
-
-        if (venue_id == undefined || venue_id === "") {
-            res.status(400).json({ error: "Venue ID is missing" });
-            return;
-        }
-
-        if (start_time == undefined || start_time === "") {
-            res.status(400).json({ error: "Start time is missing" });
-            return;
-        }
-
-        let parsed_date = new Date(start_time);
-
-        if (isNaN(parsed_date as unknown as number)) {
-            res.status(400).json({
-                error: "Invalid start time",
-            });
-            return;
-        }
-
-        eventService
-            .createEvent(
-                title,
-                venue_id,
-                parsed_date.toISOString(),
-                description,
-                cost,
-                status,
-                source_type,
-                source_url
-            )
-            .then((result) => {
-                res.status(200).json({ id: result.id, success: true });
-            })
-            .catch((err) => {
-                res.status(500).json({ success: false, error: err });
-            });
+    if (title == undefined || title === "") {
+        res.status(400).json({ error: "Title is missing" });
+        return;
     }
-);
+
+    if (venue_id == undefined || venue_id === "") {
+        res.status(400).json({ error: "Venue ID is missing" });
+        return;
+    }
+
+    if (start_time == undefined || start_time === "") {
+        res.status(400).json({ error: "Start time is missing" });
+        return;
+    }
+
+    let parsed_date = parseDateOr(start_time, new Date("1970-01-01"));
+
+    // Current or previous dates are invalid
+    if (parsed_date.getTime() <= new Date().getTime()) {
+        res.status(400).json({ error: "Invalid start time" });
+        return;
+    }
+
+    eventService
+        .createEvent(
+            title,
+            venue_id,
+            parsed_date.toISOString(),
+            description,
+            cost,
+            status,
+            source_type,
+            source_url
+        )
+        .then((result) => {
+            res.status(200).json({ id: result.id, success: true });
+        })
+        .catch((err) => {
+            res.status(500).json({ success: false, error: err });
+        });
+});
 
 // Add more event routes here (POST, PUT, DELETE, ...)
 
