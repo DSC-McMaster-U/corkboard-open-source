@@ -23,7 +23,7 @@ router.get(
                 res.status(200).json({ bookmarks: result });
             })
             .catch((err) => {
-                res.status(418).json({ error: err });
+                res.status(500).json({ error: err });
             });
     }
 );
@@ -43,7 +43,7 @@ router.post(
         const { eventId = undefined } = req.body;
 
         if (eventId == undefined || eventId === "") {
-            res.status(412).json({ error: "Missing event ID" });
+            res.status(400).json({ error: "Missing event ID" });
             return;
         }
 
@@ -53,7 +53,7 @@ router.post(
                 res.status(200).json({ success: true });
             })
             .catch((err) => {
-                res.status(418).json({ error: err });
+                res.status(500).json({ error: err });
             });
     }
 );
@@ -73,7 +73,7 @@ router.delete(
         const { eventId = undefined } = req.body;
 
         if (eventId == undefined) {
-            res.status(412).json({ error: "Missing event ID" });
+            res.status(400).json({ error: "Missing event ID" });
             return;
         }
 
@@ -83,7 +83,7 @@ router.delete(
                 res.status(200).json({ success: true });
             })
             .catch((err) => {
-                res.status(418).json({ error: err });
+                res.status(500).json({ error: err });
             });
     }
 );

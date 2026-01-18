@@ -89,7 +89,10 @@ export const db = {
 
         // get events by id
         getById: (eventId: string) =>
-            supabase.from("events").select(`
+            supabase
+                .from("events")
+                .select(
+                    `
                 *,
                 venues (
                     id,
@@ -106,7 +109,10 @@ export const db = {
                         name
                     )
                 )
-            `).eq("id", eventId).single(),
+            `
+                )
+                .eq("id", eventId)
+                .single(),
 
         // create event
         create: (eventData: {
@@ -143,6 +149,10 @@ export const db = {
             latitude: number | undefined;
             longitude: number | undefined;
         }) => supabase.from("venues").insert(venueData).select().single(),
+
+        // deletes a venue, mainly used in test cases
+        deleteById: (venueId: string) =>
+            supabase.from("venues").delete().eq("id", venueId),
     },
     bookmarks: {
         // get all bookmarks for a user
@@ -212,7 +222,7 @@ export const db = {
 
         // get user by email (for duplicate check)
         getByEmail: (email: string) =>
-            supabase.from("users").select("*").eq("email", email).maybeSingle(),
+            supabase.from("users").select("*").eq("email", email).single(), // Changed to .single() from maybeSingle() for consistent erroring
 
         // create user
         create: (name: string, email: string) =>
@@ -224,11 +234,15 @@ export const db = {
 
         // get genre by name (for duplicate check)
         getByName: (name: string) =>
-            supabase.from("genres").select("*").eq("name", name).maybeSingle(),
+            supabase.from("genres").select("*").eq("name", name).single(), // Changed to .single() from maybeSingle() for consistent erroring
 
         // create genre
         create: (name: string) =>
             supabase.from("genres").insert({ name }).select().single(),
+
+        // delete genre by ID
+        deleteById: (genreId: string) =>
+            supabase.from("genres").delete().eq("id", genreId),
     },
     healthCheck: () => supabase.from("venues").select("count").limit(1), // returns the number of venues
     auth: {

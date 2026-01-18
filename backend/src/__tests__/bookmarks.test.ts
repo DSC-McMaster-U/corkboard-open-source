@@ -20,7 +20,7 @@ describe("GET /api/bookmarks/", () => {
         expect(response.status).toBe(401);
     });
 
-    it(`should return status 418 if an invalid user is passed`, async () => {
+    it(`should return status 500 if an invalid user is passed`, async () => {
         console.warn(
             "This test cannot be implemented until JWT decryption is added."
         );
@@ -39,26 +39,28 @@ describe("POST /api/bookmarks", () => {
     let path = "/api/bookmarks";
 
     it("should return status 401 if no authorization is passed", async () => {
-        const response = await request(app).post(path).send({ eventId: INVALID_EVENT_ID });
+        const response = await request(app)
+            .post(path)
+            .send({ eventId: INVALID_EVENT_ID });
         expect(response.statusCode).toBe(401);
     });
 
-    it("should return status 412 if no event id is passed", async () => {
+    it("should return status 400 if no event id is passed", async () => {
         const response = await request(app)
             .post(path)
             .set("Authorization", bypassUserToken)
             .send({});
 
-        expect(response.statusCode).toBe(412);
+        expect(response.statusCode).toBe(400);
     });
 
-    it("should return status 418 if an invalid event id is passed", async () => {
+    it("should return status 500 if an invalid event id is passed", async () => {
         const response = await request(app)
             .post(path)
             .set("Authorization", bypassUserToken)
             .send({ eventId: INVALID_EVENT_ID });
 
-        expect(response.statusCode).toBe(418);
+        expect(response.statusCode).toBe(500);
     });
 
     it("should return status 401 if an invalid user token is passed", async () => {
@@ -86,26 +88,28 @@ describe("DELETE /api/bookmarks", () => {
     let path = "/api/bookmarks";
 
     it("should return status 401 if no authorization is passed", async () => {
-        const response = await request(app).delete(path).send({ eventId: INVALID_EVENT_ID });
+        const response = await request(app)
+            .delete(path)
+            .send({ eventId: INVALID_EVENT_ID });
         expect(response.statusCode).toBe(401);
     });
 
-    it("should return status 412 if no event id is passed", async () => {
+    it("should return status 400 if no event id is passed", async () => {
         const response = await request(app)
             .delete(path)
             .set("Authorization", bypassUserToken)
             .send({});
 
-        expect(response.statusCode).toBe(412);
+        expect(response.statusCode).toBe(400);
     });
 
-    it("should return status 418 if an invalid event id is passed", async () => {
+    it("should return status 500 if an invalid event id is passed", async () => {
         const response = await request(app)
             .delete(path)
             .set("Authorization", bypassUserToken)
             .send({ eventId: INVALID_EVENT_ID });
 
-        expect(response.statusCode).toBe(418);
+        expect(response.statusCode).toBe(500);
     });
 
     it("should return status 401 if an invalid user token is passed", async () => {
@@ -118,13 +122,13 @@ describe("DELETE /api/bookmarks", () => {
         expect(response.statusCode).toBe(401);
     });
 
-    it("should return status 418 if the user does not have this event bookmarked", async () => {
+    it("should return status 500 if the user does not have this event bookmarked", async () => {
         const response = await request(app)
             .delete(path)
             .set("Authorization", bypassUserToken)
             .send({ eventId: REAL_EVENT_ID_2 });
 
-        expect(response.statusCode).toBe(418);
+        expect(response.statusCode).toBe(500);
     });
 
     it("should return status 200 for a valid user and event", async () => {
