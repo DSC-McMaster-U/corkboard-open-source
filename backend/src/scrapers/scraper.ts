@@ -7,6 +7,7 @@ import { eventService } from "../services/eventService.js";
 import { artistService } from "../services/artistService.js";
 import { scrapeMillsHardware } from "./millshardware.js";
 import { scrapeCorktownPub } from "./corktownpub.js";
+import { scrapeBridgeworks } from "./bridgeworks.js";
 
 type Event = {
   title: string;
@@ -159,6 +160,7 @@ function sameNullableNumber(a: number | null | undefined, b: number | null | und
 const scrapeMap = new Map<string, () => Promise<Event[]>>([
     ["f35b17ff-ab6a-4e42-9a6c-2688e341e945", scrapeMillsHardware],
     ["204cc1c3-e141-4ba1-9e3f-bde3763149d2", scrapeCorktownPub],
+    ["22411a86-1b39-442c-8af8-991197838b20", scrapeBridgeworks],
 ]);
 
 for (const [venueID, scraperFunc] of scrapeMap.entries()) {
