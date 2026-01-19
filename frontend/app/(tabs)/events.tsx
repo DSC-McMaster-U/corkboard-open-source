@@ -23,6 +23,12 @@ function InfoBox({ event, onPress }: InfoBoxProps) {
   const genresText = event.event_genres && event.event_genres.length > 0
     ? event.event_genres.map((eg) => eg.genres.name).join(", ")
     : "Unspecified";
+  const costLabel =
+    event.cost == null
+      ? "Price TBA"
+      : event.cost === 0
+        ? "Free"
+        : `$${event.cost.toFixed(2)}`;
 
   return (
     <TouchableOpacity onPress={onPress} className='w-full px-4 mb-3'>
@@ -81,7 +87,7 @@ function InfoBox({ event, onPress }: InfoBoxProps) {
             <View className="flex-row items-center mt-1">
               <FontAwesome name="ticket" size={11} color="#fff" />
               <Text className="text-white text-xs ml-1">
-                ${event.cost.toFixed(2)}
+                {costLabel}
               </Text>
             </View>
           )}

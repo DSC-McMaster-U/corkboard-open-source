@@ -24,7 +24,7 @@ export default function EventModal({ visible, onClose, data }: EventModalProps) 
   const genresText = data.event_genres && data.event_genres.length > 0
     ? data.event_genres.map((eg) => eg.genres.name).join(", ")
     : "Unspecified";
-  const costText = data.cost !== undefined ? `$${data.cost.toFixed(2)}` : "Unspecified cost.";
+  const costText = data.cost !== null ? `$${data.cost!.toFixed(2)}` : "Unspecified";
   const descriptionText = data.description ? data.description : "No description available.";
   const sourceUrl = data.source_url ? data.source_url : "https://www.ticketmaster.com";
 

@@ -4,6 +4,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
+import { get } from "http";
 
 // Load environment variables
 dotenv.config();
@@ -54,7 +55,7 @@ export const db = {
             if (!isDefaultCostRange) {
                 // apply cost range filter
                 // billy's note: NULL costs will be excluded when filtering (standard behavior)
-                query = query.gte("cost", min_cost).lte("cost", max_cost);
+                query = query.or(`cost.is.null,and(cost.gte.${min_cost},cost.lte.${max_cost}))`);
             }
 
             return query.limit(limit);
@@ -69,7 +70,7 @@ export const db = {
             source_type?: "manual" | string | null,
             source_url?: string | null,
             ingestion_status?: "success" | "failed" | "pending",
-            artist?: string | null,
+            artist_id?: string | null,
             image?: string | null
         ) =>    
             supabase.from("events").insert({
@@ -82,7 +83,7 @@ export const db = {
                 source_type,
                 source_url,
                 ingestion_status,
-                artist,
+                artist_id,
                 image
             }),
          
@@ -130,9 +131,47 @@ export const db = {
         // delete event by ID
         deleteById: (eventId: string) =>
             supabase.from("events").delete().eq("id", eventId),
+
+        getByVenueTimeTitle: (
+            venue_id: string,
+            min_start_time: string,
+            max_start_time: string,
+        ) =>
+            supabase
+                .from("events")
+                .select("id, venue_id, start_time, title")
+                .eq("venue_id", venue_id)
+                .gte("start_time", min_start_time)
+                .lte("start_time", max_start_time),
+    },
+    artists: {
+        getAll: (limit = 50) =>
+            supabase.from("artists").select("*").limit(limit),
+        
+        getById: (artistId: string) =>
+            supabase.from("artists").select("*").eq("id", artistId).single(),
+
+        getByName: (name: string) =>
+            supabase.from("artists").select("*").eq("name", name).maybeSingle(),
+
+        create: (artistData: {
+            name: string;
+            bio?: string | undefined;
+            image?: string | undefined;
+            created_at?: string | undefined;
+        }) =>
+            supabase.from("artists").insert(artistData).select().single(),
+        
+        add: (name: string, bio?: string | undefined, image?: string | undefined, created_at?: string | undefined) =>    
+            supabase.from("artists").insert({
+                name,
+                bio,
+                image,
+                created_at
+            }).select().single(),
     },
     venues: {
-        getAll: (limit = 10) =>
+        getAll: (limit = 50) =>
             supabase.from("venues").select("*").limit(limit), // returns all venues
 
         // get venue by ID (helper for validation)

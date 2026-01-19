@@ -77,4 +77,17 @@ export const eventService = {
         return data;
     },
     // Add more event service methods here
+    getEventsForVenueInRange: async (
+        venue_id: string,
+        min_start_time: string,
+        max_start_time: string
+    ) => {
+        const { data, error } = await db.events.getByVenueTimeTitle(
+            venue_id,
+            min_start_time,
+            max_start_time
+        );
+        if (error) throw error;
+        return data ?? [];
+    },
 };
