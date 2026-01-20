@@ -139,10 +139,27 @@ export const db = {
         ) =>
             supabase
                 .from("events")
-                .select("id, venue_id, start_time, title")
+                .select("id, venue_id, start_time, title, description, cost, source_url, artist_id, image, status, source_type, ingestion_status")
                 .eq("venue_id", venue_id)
                 .gte("start_time", min_start_time)
                 .lte("start_time", max_start_time),
+
+        updateByID: (id: string, patch: {
+            title?: string;
+            venue_id?: string;
+            start_time?: string;
+            description?: string | null;
+            cost?: number | null;
+            status?: "published" | "draft" | "hidden";
+            source_type?: "manual" | string | null;
+            source_url?: string | null;
+            ingestion_status?: "success" | "failed" | "pending";
+            artist_id?: string | null;
+            image?: string | null;
+        }) => supabase.from("events").update(patch).eq("id", id).select().single(),
+
+        deleteForVenue: (venueId: string) =>
+            supabase.from("events").delete().eq("venue_id", venueId),
     },
     artists: {
         getAll: (limit = 50) =>
