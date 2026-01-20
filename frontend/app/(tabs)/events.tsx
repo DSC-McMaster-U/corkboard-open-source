@@ -116,7 +116,7 @@ export default function EventsScreen() {
   const [loading, setLoading] = useState(true);  // tracks if data is still being fetched
   const [error, setError] = useState<string | null>(null); // track errors during data fetching
 
-  const eventLimit = 20;
+  const eventLimit = 100;
 
   useEffect(() => {
       const controller = new AbortController();
