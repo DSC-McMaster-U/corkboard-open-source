@@ -24,25 +24,28 @@ router.get(
 
 // POST /api/users/
 router.post("/", async (req: Request, res: Response) => {
-    let { name = undefined, email = undefined } = req.body;
+    let { email = undefined, password = undefined } = req.body;
 
-    if (name === "" || name === undefined) {
-        res.status(412).json({ error: "Non-empty name is required" });
+    if (email === "" || email === undefined) {
+        res.status(400).json({ error: "Non-empty email is required" });
         return;
     }
 
-    if (email === "" || email === undefined) {
-        res.status(412).json({ error: "Non-empty email is required" });
+    if (password === "" || password === undefined) {
+        res.status(400).json({ error: "Non-empty password is required" });
         return;
     }
 
     userService
-        .createUser(name, email)
-        .then((user) => {
-            res.status(200).json({ success: true, user: user });
+        .signUpUser(email, password)
+        .then((authRes) => {
+            res.status(200).json({
+                success: true,
+                jwt: authRes.session?.access_token,
+            });
         })
         .catch((err: Error) => {
-            res.status(500).json({ error: err.message });
+            res.status(500).json({ success: false, error: err.message });
         });
 });
 
