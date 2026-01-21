@@ -1,13 +1,23 @@
-/* November 16th, 2025
- * This scarper utility is not complete, and is meant to be more proof of concept to be expanded later
- * As of now, it only support scrapigng text from the corktwon pub's list of events.
- * 
- * to run this file directly, use `node --loader ts-node/esm src/utils/scraper.ts` (from the backend directory)
+/* Jan 19th 2026
+ * to run this file directly, use (from the backend directory)
+ * `node --loader ts-node/esm src/scrapers/corktownpub.ts` 
  */
 
 import axios from "axios";
 import * as cheerio from "cheerio";
 import { eventService } from "../services/eventService.js";
+import e from "express";
+import { artistService } from "../services/artistService.js";
+
+type Event = {
+  title: string;
+  description: string;
+  start_time: Date;
+  cost?: number;
+  source_url: string;
+  image: string;
+  artist?: string;
+};
 
 export async function scrapeWebsite(url: string) {
   try {
@@ -22,15 +32,7 @@ export async function scrapeWebsite(url: string) {
     const cheerioObj = cheerio.load(html);
 
     //typescript moment
-    const results: {
-      start_time: Date,
-      description: string,
-      title: string,
-      cost: number,
-      source_url: string,
-      artist: string,
-      image: string,
-    }[] = [];
+    const results: Event[] = [];
 
     cheerioObj("h4").each((_, el) => {
       // h4 element is the time, and then go up a div, go to the next and the strong is the stage and time
@@ -44,7 +46,6 @@ export async function scrapeWebsite(url: string) {
       const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9](am|pm)$/i;
       if (timeRegex.test(description))
         description = timeAndStage[2] ?? "";
-
 
       const rawTime = timeAndStage[0] ?? "";
       if (!rawTime) return;
@@ -82,13 +83,13 @@ export async function scrapeWebsite(url: string) {
       let mm = monthDict[month];
       // if (mm === undefined) return;
 
-      const start_time = new Date(Date.UTC(yyyy, mm, Number(dd), Number(hourStr), Number(minStr), 0));
+      const start_time = new Date(yyyy, mm, Number(dd), Number(hourStr), Number(minStr), 0);
 
       // No price on the website, so set a dummy price for now!
-      const cost = 10.00;
+      //const cost = 10.00;
       const source_url = url
 
-      results.push({ start_time, description, title, cost, source_url, artist: title, image: "/images/events/corktown-pub.jpg" });
+      results.push({ title: title, description: description, start_time: start_time, source_url: source_url, artist: title, image: "/images/events/corktown-pub.jpg" });
     });
 
     return results;
@@ -99,42 +100,20 @@ export async function scrapeWebsite(url: string) {
   }
 }
 
-const data = await scrapeWebsite("https://corktownpub.ca/on-the-stage/");
-console.log(data);
 
-//still need to check if events already exist before inserting
-export async function insertScrapedEvents(events:
-  {
-    start_time: Date,
-    description: string,
-    title: string,
-    cost: number,
-    source_url: string,
-    artist: string,
-    image: string,
-  }[]
-) {
-  for (const event of events) {
-    await eventService.addEvent(event.title,
-      "204cc1c3-e141-4ba1-9e3f-bde3763149d2", 
-      event.start_time.toISOString(),
-      event.description,
-      event.cost,
-      "published",
-      "scraping",
-      event.source_url,
-      "success",
-      event.artist,
-      event.image
-    );
-    console.log(`Inserted event: ${event.title}`);
-  }
-}
+// const data = await scrapeCorktownPub();
+// console.log(data);
+// const venueID = "204cc1c3-e141-4ba1-9e3f-bde3763149d2";
 
-if (data?.length) {
-  try {
-    await insertScrapedEvents(data);
-  } catch (err) {
-    console.error("Failed to insert events:", err);
-  }
+// if (data?.length) {
+//   try {
+//     await insertScrapedEvents(data);
+//   } catch (err) {
+//     console.error("Failed to insert events:", err);
+//   }
+// }
+
+export async function scrapeCorktownPub() {
+  const data = await scrapeWebsite("https://corktownpub.ca/on-the-stage/");
+  return data;
 }

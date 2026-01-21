@@ -77,4 +77,46 @@ export const eventService = {
         return data;
     },
     // Add more event service methods here
+    getEventsForVenueInRange: async (
+        venue_id: string,
+        min_start_time: string,
+        max_start_time: string
+    ) => {
+        const { data, error } = await db.events.getByVenueTimeTitle(
+            venue_id,
+            min_start_time,
+            max_start_time
+        );
+        if (error) throw error;
+        return data ?? [];
+    },
+
+    updateEventByID: async (
+        id: string,
+        patch: {
+            title?: string;
+            venue_id?: string;
+            start_time?: string;
+            description?: string | null;
+            cost?: number | null;
+            status?: "published" | "draft" | "hidden";
+            source_type?: "manual" | string | null;
+            source_url?: string | null;
+            ingestion_status?: "success" | "failed" | "pending";
+            artist_id?: string | null;
+            image?: string | null;
+        }
+    ) => {
+        const {data, error} = await db.events.updateByID(id, patch);
+        if (error) throw error;
+        return data;
+    },
+
+    deleteEventsForVenue: async (
+        venueId: string
+    ) => {
+        const { data, error } = await db.events.deleteForVenue(venueId);
+        if (error) throw error;
+        return data;
+    },
 };

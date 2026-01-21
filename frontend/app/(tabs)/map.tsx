@@ -11,7 +11,7 @@ import { router } from 'expo-router';
 import { useNavBarVisibility } from "@/scripts/navBarVisibility";
 import { Colors } from "@/constants/theme";
 const HAMILTON = { latitude: 43.2557, longitude: -79.8711, latitudeDelta: 0.04, longitudeDelta: 0.04 };
-const eventLimit = 20;
+const eventLimit = 100;
 
 type Filter = "none" | "genre" | "artist" | "venue";
 
@@ -225,7 +225,7 @@ export default function MapScreen() {
               onPress={() => {
                 handleVenuePress(v);
               }}
-              pinColor={'blue'}
+              //image={}  switch to images for markers eventually
             />
           ))}
         </MapView>

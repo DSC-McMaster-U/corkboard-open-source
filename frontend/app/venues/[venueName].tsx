@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { EventData, EventList } from '@/constants/types';
 import { apiFetch, getImageUrl } from '@/api/api';
 import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 import MapView, { Marker } from 'react-native-maps';
 import { Modal, Pressable } from 'react-native';
 
@@ -30,9 +31,13 @@ export default function VenuePage() {
   const [isFavourite, setIsFavourite] = useState(false);
   const [favouriteLoading, setFavouriteLoading] = useState(false);
 
+  const [isFavourite, setIsFavourite] = useState(false);
+  const [favouriteLoading, setFavouriteLoading] = useState(false);
+
   const eventLimit = 100;
   
   useEffect(() => {
+    // fetching event data from backend
     // fetching event data from backend
     const controller = new AbortController();
     let isMounted = true;
@@ -102,8 +107,67 @@ export default function VenuePage() {
       //   }
       // };
       // checkBookmarkStatus();
+
+    // check if already favourited on mount
+      if (!venueID) return;
+      setIsFavourite(false); // Placeholder until backend is implemented
+      setFavouriteLoading(false);
+      // const checkBookmarkStatus = async () => {
+      //   try {
+      //     const response = await apiFetch<BookmarkResponse>('api/bookmarks', {
+      //       headers: { Authorization: 'TESTING_BYPASS' },
+      //     });
+
+      //     const isAlreadyBookmarked = response.bookmarks.some(
+      //       (bookmark) => bookmark.event_id === event_id
+      //     );
+      //     setIsBookmarked(isAlreadyBookmarked);
+      //   } catch (err) {
+      //     console.error('Failed to check bookmark status:', err);
+      //   }
+      // };
+      // checkBookmarkStatus();
   }, [venueID]);
 
+  // Get venue type emoji
+  const getVenueEmoji = (type: string | undefined) => {
+    const emojiMap: Record<string, string> = {
+      bar: '🍻',
+      club: '🎧',
+      theater: '🎭',
+      venue: '🎸',
+      outdoor: '🎪',
+      other: '🎤',
+    };
+    return emojiMap[type || 'other'] || '📍';
+  };
+
+  const handleFavouriteToggle = async () => {
+    if (!venueID) return;
+
+    setFavouriteLoading(true);
+    try {
+      // if (isFavourite) {
+      //   await apiFetch('api/bookmarks', {
+      //     method: 'DELETE',
+      //     headers: { Authorization: 'TESTING_BYPASS' },
+      //     body: JSON.stringify({ venueID: venueID }),
+      //   });
+      // } else {
+      //   await apiFetch('api/bookmarks', {
+      //     method: 'POST',
+      //     headers: { Authorization: 'TESTING_BYPASS' },
+      //     body: JSON.stringify({ venueID: venueID }),
+      //   });
+      // }
+      setIsFavourite(!isFavourite);
+    } catch (err: any) {
+      console.error('Bookmark toggle failed:', JSON.stringify(err, null, 2));
+      console.error('Venue ID was:', venueID);
+    } finally {
+      setFavouriteLoading(false);
+    }
+  };
   // Get venue type emoji
   const getVenueEmoji = (type: string | undefined) => {
     const emojiMap: Record<string, string> = {
@@ -174,6 +238,9 @@ export default function VenuePage() {
   const imageUri = image ? getImageUrl(image as string) : null;
   const PLACEHOLDER_IMAGE = "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b";
 
+  const imageUri = image ? getImageUrl(image as string) : null;
+  const PLACEHOLDER_IMAGE = "https://i.scdn.co/image/ab6761610000e5ebc011b6c30a684a084618e20b";
+
   const lat = latitude ? Number(latitude) : null;
   const lng = longitude ? Number(longitude) : null;
 
@@ -184,9 +251,52 @@ export default function VenuePage() {
 
       {/* Hero banner with image */}
 
+
+      {/* Hero banner with image */}
+
       
       {/* Header with back button and venue name */}
       <View className='bg-accent'>
+        <View className='relative h-[42vh]'>
+          <Image
+            source={{ uri: imageUri || PLACEHOLDER_IMAGE }}
+            className='w-full h-full'
+            resizeMode='cover'
+          />
+          {/* Gradient Overlay */}
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.95)']}
+            locations={[0.2, 0.6, 1]}
+            className='absolute inset-0'
+          />
+
+          {/* Top Bar - Back & Actions */}
+          <View className='absolute top-14 left-0 right-0 px-5 flex-row justify-between items-center'>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className='bg-black/40 rounded-full p-2.5 backdrop-blur-sm'
+            >
+              <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+
+            <View className='flex-row gap-3'>
+              <TouchableOpacity
+                onPress={handleFavouriteToggle}
+                disabled={favouriteLoading}
+                className='bg-black/40 rounded-full p-2.5 backdrop-blur-sm'
+              >
+                <Ionicons
+                  name={isFavourite ? "star" : "star-outline"}
+                  size={22}
+                  color={isFavourite ? "#C4A484" : "white"}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Event Title & Artist */}
+          <View className='absolute bottom-0 left-0 right-0 px-6 pb-6'>
+            <Text className='text-white font-bold text-3xl leading-tight mb-1'>
         <View className='relative h-[42vh]'>
           <Image
             source={{ uri: imageUri || PLACEHOLDER_IMAGE }}
@@ -240,7 +350,14 @@ export default function VenuePage() {
             <View className='bg-secondary/50 rounded-2xl p-4 flex-row items-center'>
               <View className='w-12 h-12 rounded-xl bg-accent/20 items-center justify-center mr-4'>
                 <Text className='text-2xl'>{getVenueEmoji(venueType as string)}</Text>
+          <View className='px-4 py-4'>
+            <View className='bg-secondary/50 rounded-2xl p-4 flex-row items-center'>
+              <View className='w-12 h-12 rounded-xl bg-accent/20 items-center justify-center mr-4'>
+                <Text className='text-2xl'>{getVenueEmoji(venueType as string)}</Text>
               </View>
+              <View className='flex-1'>
+                <Text className='text-foreground font-semibold text-base'>
+                  {processedVenueType}
               <View className='flex-1'>
                 <Text className='text-foreground font-semibold text-base'>
                   {processedVenueType}
@@ -253,9 +370,19 @@ export default function VenuePage() {
                     </Text>
                   </View>
                 )}
+                {address && (
+                  <View className='flex-row items-start'>
+                    <Ionicons name="location-outline" size={18} color="#000000" />
+                    <Text className='text-muted-foreground ml-2 text-sm mt-0.5'>
+                      {address}
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
           </View>
+
+          <View className='border-b border-secondary/50' />
 
           <View className='border-b border-secondary/50' />
 
