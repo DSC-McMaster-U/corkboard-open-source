@@ -3,6 +3,23 @@ import { View, Text, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, Pla
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useRouter } from "expo-router";
 
+const isValidUsername = (username: string) => {
+  return /^[a-zA-Z0-9_]{3,20}$/.test(username);
+};
+
+const isValidEmail = (email: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+const isValidPassword = (password: string) => {
+  return (
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password) &&
+    /[0-9]/.test(password)
+  );
+};
+
 export default function RegisterScreen() {
   const router = useRouter();
   const [username, setUsername] = useState("");
@@ -11,13 +28,46 @@ export default function RegisterScreen() {
   const [confirmPw, setConfirmPw] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const onRegister = () => {
-    // TODO: call your backend register endpoint here
-    // If success:
-    router.replace("/"); // or router.replace("/(auth)/login") if you want them to login after
+    setError(null);
+  
+    if (!username || !email || !pw || !confirmPw) {
+      setError("All fields are required.");
+      return;
+    }
+  
+    if (!isValidUsername(username)) {
+      setError(
+        "Username must be 3–20 characters and contain only letters, numbers, or underscores."
+      );
+      return;
+    }
+  
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+  
+    if (!isValidPassword(pw)) {
+      setError(
+        "Password must be at least 8 characters and include uppercase, lowercase, and a number."
+      );
+      return;
+    }
+  
+    if (pw !== confirmPw) {
+      setError("Passwords do not match.");
+      return;
+    }
+  
+    // Passed all checks — call backend here
+    // registerUser({ username, email, password: pw });
+  
+    router.replace("/"); // or "/login"
   };
-
+  
   return (
     <KeyboardAvoidingView
       style={styles.page}
@@ -97,6 +147,8 @@ export default function RegisterScreen() {
                 />
               </Pressable>
             </View>
+
+            {error && <Text style={styles.errorText}>{error}</Text>}
 
             <Pressable style={styles.primaryBtn} onPress={onRegister}>
               <Text style={styles.primaryBtnText}>Register</Text>
@@ -197,6 +249,15 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     textDecorationLine: "underline",
     fontWeight: "700",
+  },
+  errorText: {
+    color: "#ffd6d6",
+    backgroundColor: "#7a1f1f",
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 12,
+    textAlign: "center",
+    fontSize: 13,
   },
 });
 
