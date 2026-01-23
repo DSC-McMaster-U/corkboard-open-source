@@ -65,7 +65,7 @@ export default function RegisterScreen() {
     // Passed all checks — call backend here
     // registerUser({ username, email, password: pw });
   
-    router.replace("/"); // or "/login"
+    router.replace("/"); 
   };
   
   return (
