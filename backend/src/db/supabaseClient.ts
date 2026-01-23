@@ -4,6 +4,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
+import { get } from "http";
 
 // Load environment variables
 dotenv.config();
@@ -66,11 +67,38 @@ export const db = {
             if (!isDefaultCostRange) {
                 // apply cost range filter
                 // billy's note: NULL costs will be excluded when filtering (standard behavior)
-                query = query.gte("cost", min_cost).lte("cost", max_cost);
+                query = query.or(`cost.is.null,and(cost.gte.${min_cost},cost.lte.${max_cost}))`);
             }
 
             return query.limit(limit);
         },
+        add: (
+            title: string,
+            venue_id: string,
+            start_time: string,
+            description?: string | null,
+            cost?: number | null,
+            status?: "published" | "draft" | "hidden",
+            source_type?: "manual" | string | null,
+            source_url?: string | null,
+            ingestion_status?: "success" | "failed" | "pending",
+            artist_id?: string | null,
+            image?: string | null
+        ) =>    
+            supabase.from("events").insert({
+                title,
+                venue_id,
+                start_time,
+                description,
+                cost,
+                status,
+                source_type,
+                source_url,
+                ingestion_status,
+                artist_id,
+                image
+            }),
+         
 
         // get events by id
         getById: (eventId: string) =>
@@ -148,9 +176,38 @@ export const db = {
                 .update({ archived: true })
                 .lt("start_time", new Date().toISOString())
                 .eq("archived", false),
+
+        getByVenueTimeTitle: (
+            venue_id: string,
+            min_start_time: string,
+            max_start_time: string,
+        ) =>
+            supabase
+                .from("events")
+                .select("id, venue_id, start_time, title, description, cost, source_url, artist_id, image, status, source_type, ingestion_status")
+                .eq("venue_id", venue_id)
+                .gte("start_time", min_start_time)
+                .lte("start_time", max_start_time),
+
+        updateByID: (id: string, patch: {
+            title?: string;
+            venue_id?: string;
+            start_time?: string;
+            description?: string | null;
+            cost?: number | null;
+            status?: "published" | "draft" | "hidden";
+            source_type?: "manual" | string | null;
+            source_url?: string | null;
+            ingestion_status?: "success" | "failed" | "pending";
+            artist_id?: string | null;
+            image?: string | null;
+        }) => supabase.from("events").update(patch).eq("id", id).select().single(),
+
+        deleteForVenue: (venueId: string) =>
+            supabase.from("events").delete().eq("venue_id", venueId),
     },
     venues: {
-        getAll: (limit = 10) =>
+        getAll: (limit = 50) =>
             supabase.from("venues").select("*").limit(limit), // returns all venues
 
         // get venue by ID (helper for validation)
@@ -291,7 +348,7 @@ export const db = {
 
         // get user by email (for duplicate check)
         getByEmail: (email: string) =>
-            supabase.from("users").select("*").eq("email", email).maybeSingle(),
+            supabase.from("users").select("*").eq("email", email).single(), // Changed to .single() from maybeSingle() for consistent erroring
 
         // create user
         create: (name: string, email: string) =>
@@ -368,31 +425,46 @@ export const db = {
 
         // get genre by name (for duplicate check)
         getByName: (name: string) =>
-            supabase.from("genres").select("*").eq("name", name).maybeSingle(),
+            supabase.from("genres").select("*").eq("name", name).single(), // Changed to .single() from maybeSingle() for consistent erroring
 
         // create genre
         create: (name: string) =>
             supabase.from("genres").insert({ name }).select().single(),
+
+        // delete genre by ID
+        deleteById: (genreId: string) =>
+            supabase.from("genres").delete().eq("id", genreId),
     },
     artists: {
         // get all artists
-        getAll: () => supabase.from("artists").select("*"),
+        getAll: (limit = 50) =>
+            supabase.from("artists").select("*").limit(limit),
+        
+        // get artist by ID
+        getById: (artistId: string) =>
+            supabase.from("artists").select("*").eq("id", artistId).single(),
 
         // get artist by name (for duplicate check)
         getByName: (name: string) =>
             supabase.from("artists").select("*").eq("name", name).maybeSingle(),
 
-        // get artist by ID
-        getById: (artistId: string) =>
-            supabase.from("artists").select("*").eq("id", artistId).single(),
+        // create artist (with object parameter)
+        create: (artistData: {
+            name: string;
+            bio?: string | undefined;
+            image?: string | undefined;
+            created_at?: string | undefined;
+        }) =>
+            supabase.from("artists").insert(artistData).select().single(),
 
-        // create artist
-        create: (name: string, bio?: string, image?: string) =>
-            supabase
-                .from("artists")
-                .insert({ name, bio, image })
-                .select()
-                .single(),
+        // add artist (with individual parameters - convenience method)
+        add: (name: string, bio?: string | undefined, image?: string | undefined, created_at?: string | undefined) =>    
+            supabase.from("artists").insert({
+                name,
+                bio,
+                image,
+                created_at
+            }).select().single(),
     },
     healthCheck: () => supabase.from("venues").select("count").limit(1), // returns the number of venues
     auth: {

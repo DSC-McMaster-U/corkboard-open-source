@@ -1,10 +1,12 @@
 import express from "express";
 import type { Request, Response } from "express";
 import { venueService } from "../services/venueService.js";
+import { parseIntOr } from "../utils/parser.js";
 
 const router = express.Router();
+const DEFAULT_VENUE_LIMIT = 10;
 
-// GET /api/venues - Get all venues
+// GET /api/venues - Get venues matching an id, up to a certain limit
 router.get("/", async (req: Request, res: Response) => {
     try {
         const { id = undefined, limit = undefined } = req.query;
@@ -15,7 +17,7 @@ router.get("/", async (req: Request, res: Response) => {
             return;
         }
 
-        const limitNum = limit ? parseInt(limit as string) : 10;
+        const limitNum = parseIntOr(limit as string, DEFAULT_VENUE_LIMIT);
         const venues = await venueService.getAllVenues(limitNum);
 
         res.json({ venues: venues, count: venues.length });

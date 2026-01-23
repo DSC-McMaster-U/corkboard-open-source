@@ -1,6 +1,7 @@
 import React from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { trendingSongs } from '@/constants/mock-data';
+import { router } from 'expo-router';
 
 interface TrendingCardProps {
   artist: string
@@ -9,8 +10,16 @@ interface TrendingCardProps {
 }
 
 function TrendingCard({ artist, song, color }: TrendingCardProps) {
+
+  const handleOnClick = () => {
+    router.push({
+      pathname: '/artists/[artistName]',
+      params: { artistName: artist }
+    });
+  }
+
   return (
-    <TouchableOpacity onPress={() => Alert.alert(song)}>
+    <TouchableOpacity onPress={handleOnClick}>
       <View 
         className='rounded-2xl px-4 py-3 flex-row items-center bg-secondary'
       >
@@ -22,16 +31,13 @@ function TrendingCard({ artist, song, color }: TrendingCardProps) {
           <Text className='text-foreground font-semibold text-sm' numberOfLines={1}>
             {artist}
           </Text>
-          <Text className='text-accent text-xs opacity-90' numberOfLines={1}>
-            {song}
-          </Text>
         </View>
       </View>
     </TouchableOpacity>
   );
 }
 
-export function TrendingSongs() {
+export function TrendingArtists() {
   return (
     <View>
       <View className='flex-row flex-wrap gap-3'>
