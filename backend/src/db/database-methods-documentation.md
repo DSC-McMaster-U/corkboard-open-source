@@ -210,6 +210,91 @@ const { data, error } = await db.events.archivePastEvents();
 
 ---
 
+### `db.events.getByVenueTimeTitle(venue_id, min_start_time, max_start_time)`
+
+**Purpose:** Retrieve events for a specific venue within a time range (used by web scrapers).
+
+**Parameters:**
+- `venue_id` (string): UUID of the venue
+- `min_start_time` (string): ISO timestamp - events must start on or after this time
+- `max_start_time` (string): ISO timestamp - events must start on or before this time
+
+**Returns:** Supabase query object with events array containing: `id`, `venue_id`, `start_time`, `title`, `description`, `cost`, `source_url`, `artist_id`, `image`, `status`, `source_type`, `ingestion_status`
+
+**Usage Example:**
+```typescript
+const { data: events, error } = await db.events.getByVenueTimeTitle(
+    "venue-uuid-here",
+    "2026-01-01T00:00:00Z",
+    "2026-12-31T23:59:59Z"
+);
+```
+
+**When to Use:**
+- Web scraping: Check for existing events before creating duplicates
+- Backend: Venue-specific event queries
+
+---
+
+### `db.events.updateByID(id, patch)`
+
+**Purpose:** Update an existing event by ID (partial update).
+
+**Parameters:**
+- `id` (string): UUID of the event
+- `patch` (object): Partial event data to update:
+  - `title?` (string): Event title
+  - `venue_id?` (string): UUID of the venue
+  - `start_time?` (string): ISO timestamp
+  - `description?` (string | null): Event description
+  - `cost?` (number | null): Event cost
+  - `status?` (`"published"` | `"draft"` | `"hidden"`): Event status
+  - `source_type?` (string | null): Source type (e.g., `"manual"`, `"scraper"`)
+  - `source_url?` (string | null): URL where event was scraped from
+  - `ingestion_status?` (`"success"` | `"failed"` | `"pending"`): Ingestion status
+  - `artist_id?` (string | null): UUID of the artist
+  - `image?` (string | null): Image URL
+
+**Returns:** Supabase query object with updated event
+
+**Usage Example:**
+```typescript
+const { data, error } = await db.events.updateByID("event-uuid-here", {
+    title: "Updated Event Title",
+    cost: 25,
+    status: "published"
+});
+```
+
+**When to Use:**
+- Web scraping: Update existing events with new information
+- Backend: Event editing endpoint
+- Admin: Manual event updates
+
+---
+
+### `db.events.deleteForVenue(venueId)`
+
+**Purpose:** Delete all events for a specific venue (used by web scrapers to clear old data before re-scraping).
+
+**Parameters:**
+- `venueId` (string): UUID of the venue
+
+**Returns:** Supabase query object
+
+**Usage Example:**
+```typescript
+const { error } = await db.events.deleteForVenue("venue-uuid-here");
+```
+
+**When to Use:**
+- Web scraping: Clear old events before re-scraping a venue
+- Admin: Bulk deletion of venue events
+
+**Warning:** This permanently deletes all events for the venue. Use with caution.
+
+---
+
 ## Venues
 
 ### `db.venues.getAll(limit?)`
@@ -718,15 +803,18 @@ const { data, error } = await db.genres.create("Blues");
 
 ## Artists
 
-### `db.artists.getAll()`
+### `db.artists.getAll(limit?)`
 
-**Purpose:** Retrieve all artists.
+**Purpose:** Retrieve a list of artists.
+
+**Parameters:**
+- `limit` (number, optional, default: 50): Maximum number of artists to return
 
 **Returns:** Supabase query object with artists array
 
 **Usage Example:**
 ```typescript
-const { data: artists, error } = await db.artists.getAll();
+const { data: artists, error } = await db.artists.getAll(100);
 ```
 
 **When to Use:**
@@ -775,20 +863,49 @@ const { data: artist, error } = await db.artists.getById("artist-uuid-here");
 
 ---
 
-### `db.artists.create(name, bio?, image?)`
+### `db.artists.create(artistData)`
 
-**Purpose:** Create a new artist.
+**Purpose:** Create a new artist (with object parameter).
 
 **Parameters:**
-- `name` (string, required): Artist name (must be unique)
-- `bio` (string | undefined): Artist biography
-- `image` (string | undefined): Supabase Storage public URL (e.g., `"https://<project-id>.supabase.co/storage/v1/object/public/artists/artist-123.jpg"`)
+- `artistData` (object):
+  - `name` (string, required): Artist name (must be unique)
+  - `bio?` (string | undefined): Artist biography
+  - `image?` (string | undefined): Supabase Storage public URL (e.g., `"https://<project-id>.supabase.co/storage/v1/object/public/artists/artist-123.jpg"`)
+  - `created_at?` (string | undefined): ISO timestamp (usually auto-generated)
 
 **Returns:** Supabase query object with created artist
 
 **Usage Example:**
 ```typescript
-const { data, error } = await db.artists.create(
+const { data, error } = await db.artists.create({
+    name: "The Local Band",
+    bio: "A local Hamilton band",
+    image: "https://<project-id>.supabase.co/storage/v1/object/public/artists/local-band.jpg"
+});
+```
+
+**When to Use:**
+- Backend: Artist creation endpoint
+- Web scraping: Ingesting new artists from event data
+
+---
+
+### `db.artists.add(name, bio?, image?, created_at?)`
+
+**Purpose:** Create a new artist (convenience method with individual parameters).
+
+**Parameters:**
+- `name` (string, required): Artist name (must be unique)
+- `bio?` (string | undefined): Artist biography
+- `image?` (string | undefined): Supabase Storage public URL
+- `created_at?` (string | undefined): ISO timestamp (usually auto-generated)
+
+**Returns:** Supabase query object with created artist
+
+**Usage Example:**
+```typescript
+const { data, error } = await db.artists.add(
     "The Local Band",
     "A local Hamilton band",
     "https://<project-id>.supabase.co/storage/v1/object/public/artists/local-band.jpg"
@@ -796,8 +913,8 @@ const { data, error } = await db.artists.create(
 ```
 
 **When to Use:**
-- Backend: Artist creation endpoint
-- Web scraping: Ingesting new artists from event data
+- Backend: Artist creation with individual parameters (alternative to `create()`)
+- Web scraping: Quick artist creation
 
 ---
 
@@ -981,45 +1098,6 @@ const { data, error } = await db.healthCheck();
 
 **When to Use:**
 - Backend: Health check endpoint (GET `/api/health`)
-
----
-
-## Phase 2 Requirements Coverage
-
-### ✅ Completed
-
-1. **User Account Management:**
-   - ✅ Edit account information: `db.users.updateProfile()`
-   - ✅ Create new user: `db.users.create()` + `db.auth.signUp()`
-   - ✅ Verify login info: `db.auth.signIn()`
-   - ✅ User profile fields: `username`, `profile_picture`, `bio` supported
-
-2. **Favorites:**
-   - ✅ Favorite/unfavorite genres: `db.users.addFavoriteGenre()` / `removeFavoriteGenre()`
-   - ✅ Favorite/unfavorite venues: `db.users.addFavoriteVenue()` / `removeFavoriteVenue()`
-   - ✅ Favorite/unfavorite artists: `db.users.addFavoriteArtist()` / `removeFavoriteArtist()`
-   - ✅ Get user with favorites: `db.users.getByIdWithFavorites()`
-
-3. **Bookmarks:**
-   - ✅ Bookmark event: `db.bookmarks.create()`
-   - ✅ Unbookmark event: `db.bookmarks.delete()`
-   - ✅ Get user bookmarks: `db.bookmarks.getByUserId()`
-   - ✅ Check if bookmarked: `db.bookmarks.exists()`
-
-4. **Image Files:**
-   - ✅ Images stored in Supabase Storage (cloud storage, not local files)
-   - ✅ Image URLs stored in database (`events.image`, `artists.image`, `users.profile_picture`)
-   - ✅ Image upload/delete endpoints available (`/api/images/*`)
-   - ✅ Storage methods in `db.storage` for direct access
-
-### ❌ Missing / Not Yet Implemented
-
-1. **Event Archiving:**
-   - ✅ `archived` column added to `events` table
-   - ✅ `db.events.getAll()` filters archived events by default
-   - ✅ `db.events.archiveById()` - Archive single event
-   - ✅ `db.events.unarchiveById()` - Unarchive single event
-   - ✅ `db.events.archivePastEvents()` - Archive all past events
 
 ---
 
