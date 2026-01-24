@@ -39,13 +39,17 @@ router.get("/", async (req: Request, res: Response) => {
 
     const radius = parseIntOr(req.query.radius as string | undefined, 10);
 
+    const includeArchived =
+        req.query.include_archived === "true";
+
     eventService
         .getAllEvents(
             limit,
             min_start_time.toISOString(),
             max_start_time.toISOString(),
             min_cost,
-            max_cost
+            max_cost,
+            includeArchived
         )
         .then((events) => {
             res.status(200).json({ events: events, count: events.length });
@@ -67,6 +71,8 @@ router.post("/", async (req: Request, res: Response) => {
         status = undefined,
         source_type = undefined,
         source_url = undefined,
+        image = undefined,
+        artist_id = undefined,
     } = req.body;
 
     const cost = parseFloatOr(req.body.cost, 0);
@@ -108,7 +114,9 @@ router.post("/", async (req: Request, res: Response) => {
             cost,
             status,
             source_type,
-            source_url
+            source_url,
+            image,
+            artist_id
         )
         .then((result) => {
             res.status(200).json({ id: result.id, success: true });
