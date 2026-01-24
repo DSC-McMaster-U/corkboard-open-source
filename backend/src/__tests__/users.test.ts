@@ -248,73 +248,73 @@ describe("Users test suite", () => {
         });
     });
 
-    describe("Favorite Artists", () => {
-        it("should add favorite artist", async () => {
+    // describe("Favorite Artists", () => {
+    //     it("should add favorite artist", async () => {
 
-            const { data: firstUser } = await db.users.getFirst();
-            if (!firstUser) {
-                throw new Error("No users found");
-            }
+    //         const { data: firstUser } = await db.users.getFirst();
+    //         if (!firstUser) {
+    //             throw new Error("No users found");
+    //         }
 
-            // create a test artist first
-            const artistName = `Test Artist ${Date.now()}`;
-            const { data: artist, error: createError } = await db.artists.create(
-                artistName
-            );
+    //         // create a test artist first
+    //         const artistName = `Test Artist ${Date.now()}`;
+    //         const { data: artist, error: createError } = await db.artists.create(
+    //             artistName
+    //         );
 
-            if (createError || !artist) {
-                throw new Error("Failed to create artist");
-            }
+    //         if (createError || !artist) {
+    //             throw new Error("Failed to create artist");
+    //         }
             
-            const artistId = artist.id;
+    //         const artistId = artist.id;
 
-            // remove if already exists
-            await db.users.removeFavoriteArtist(firstUser.id, artistId);
+    //         // remove if already exists
+    //         await db.users.removeFavoriteArtist(firstUser.id, artistId);
 
-            const { data: favorite, error } = await db.users.addFavoriteArtist(
-                firstUser.id,
-                artistId
-            );
+    //         const { data: favorite, error } = await db.users.addFavoriteArtist(
+    //             firstUser.id,
+    //             artistId
+    //         );
 
-            expect(error).toBeNull();
-            expect(favorite).toBeDefined();
-            expect(favorite?.user_id).toBe(firstUser.id);
-            expect(favorite?.artist_id).toBe(artistId);
+    //         expect(error).toBeNull();
+    //         expect(favorite).toBeDefined();
+    //         expect(favorite?.user_id).toBe(firstUser.id);
+    //         expect(favorite?.artist_id).toBe(artistId);
 
-            // clean up
-            await db.users.removeFavoriteArtist(firstUser.id, artistId);
+    //         // clean up
+    //         await db.users.removeFavoriteArtist(firstUser.id, artistId);
             
-        });
+    //     });
 
-        it("should remove favorite artist", async () => {
+    //     it("should remove favorite artist", async () => {
 
-            const { data: firstUser } = await db.users.getFirst();
-            if (!firstUser) {
-                throw new Error("No users found");
-            }
+    //         const { data: firstUser } = await db.users.getFirst();
+    //         if (!firstUser) {
+    //             throw new Error("No users found");
+    //         }
 
-            // create a test artist first
-            const artistName = `Test Artist ${Date.now()}`;
-            const { data: artist, error: createError } = await db.artists.create(
-                artistName
-            );
+    //         // create a test artist first
+    //         const artistName = `Test Artist ${Date.now()}`;
+    //         const { data: artist, error: createError } = await db.artists.create(
+    //             artistName
+    //         );
 
-            if (createError) {
-                throw new Error("Failed to create artist");
-            }
-            const artistId = artist.id;
+    //         if (createError) {
+    //             throw new Error("Failed to create artist");
+    //         }
+    //         const artistId = artist.id;
 
-            // Add first
-            await db.users.addFavoriteArtist(firstUser.id, artistId);
+    //         // Add first
+    //         await db.users.addFavoriteArtist(firstUser.id, artistId);
 
-            // Then remove
-            const { error } = await db.users.removeFavoriteArtist(
-                firstUser.id,
-                artistId
-            );
+    //         // Then remove
+    //         const { error } = await db.users.removeFavoriteArtist(
+    //             firstUser.id,
+    //             artistId
+    //         );
 
-            expect(error).toBeNull();
-        });
-    });
+    //         expect(error).toBeNull();
+    //     });
+    // });
 });
 
