@@ -467,6 +467,10 @@ export const db = {
             }).select().single(),
     },
     healthCheck: () => supabase.from("venues").select("count").limit(1), // returns the number of venues
+
+    // URGENT: auth methods are temporarily disabled to prevent creating users with invalid emails
+    // TODO: re-enable after email validation is implemented
+    /*
     auth: {
         // validate JWT token with Supabase Auth
         validateJWT: (token: string) => supabase.auth.getUser(token),
@@ -482,4 +486,5 @@ export const db = {
         // sign out user (optional, for future use)
         signOut: () => supabase.auth.signOut(),
     },
+    */
 };
