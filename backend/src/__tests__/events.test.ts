@@ -83,7 +83,7 @@ describe("GET /api/events/", () => {
     it("should only return events later than the start date range", async () => {
         let min_start_time = new Date("2026-01-01");
         let response = await request(app).get(
-            path + `?min_start_time=${min_start_time.toISOString()}`
+            path + `?min_start_time=${min_start_time.toISOString()}`,
         );
 
         let events: Array<Event> = response.body.events;
@@ -92,7 +92,7 @@ describe("GET /api/events/", () => {
 
         events.forEach((event) => {
             expect(new Date(event.start_time).getTime()).toBeGreaterThanOrEqual(
-                min_start_time.getTime()
+                min_start_time.getTime(),
             );
         });
     });
@@ -100,7 +100,7 @@ describe("GET /api/events/", () => {
     it("should only return events before than the end date range", async () => {
         let max_start_time = new Date("2026-01-01");
         let response = await request(app).get(
-            path + `?max_start_time=${max_start_time.toISOString()}`
+            path + `?max_start_time=${max_start_time.toISOString()}`,
         );
 
         let events: Array<Event> = response.body.events;
@@ -109,7 +109,7 @@ describe("GET /api/events/", () => {
 
         events.forEach((event) => {
             expect(new Date(event.start_time).getTime()).toBeLessThanOrEqual(
-                max_start_time.getTime()
+                max_start_time.getTime(),
             );
         });
     });
@@ -142,13 +142,13 @@ describe("GET /api/events/", () => {
 
     it("should only return events within the radius of the location", async () => {
         console.warn(
-            "This test is not implemented, will be implemented in MVP 2"
+            "This test is not implemented, will be implemented in MVP 2",
         );
     });
 
     it("should only return events within the 10km of the Hamilton if no location is provided", async () => {
         console.warn(
-            "This test is not implemented, will be implemented in MVP 2"
+            "This test is not implemented, will be implemented in MVP 2",
         );
     });
 
@@ -164,7 +164,7 @@ describe("GET /api/events/", () => {
 
             expect(event.id).not.toBe("");
             expect(parseDateOr(event.created_at, new Date("1970"))).not.toBe(
-                new Date("1970")
+                new Date("1970"),
             );
             expect(event.venues.id).not.toBe("");
             expect(event.venues.name).not.toBe("");
@@ -179,7 +179,7 @@ describe("GET /api/events/", () => {
 
         let response = await request(app).get(
             path +
-                `?limit=100&min_cost=20&max_cost=20&min_start_time${start_time}&max_start_time=${end_time}`
+                `?limit=100&min_cost=20&max_cost=20&min_start_time${start_time}&max_start_time=${end_time}`,
         );
 
         let events: Array<Event> = response.body.events;
@@ -210,7 +210,7 @@ describe("GET /api/events/", () => {
 
             // Venue Verification
             expect(event.venues.id).toBe(
-                "b28f8296-005a-48f1-b8ed-47a13fca3215"
+                "b28f8296-005a-48f1-b8ed-47a13fca3215",
             );
             expect(event.venues.name).toBe("The Underground");
             expect(event.venues.address).toBe("123 James St N, Hamilton, ON");
@@ -222,17 +222,17 @@ describe("GET /api/events/", () => {
             let sortedGenres = [...event.event_genres!].sort();
 
             expect(sortedGenres[0]?.genre_id).toBe(
-                "0049ad43-60b4-4507-bf3c-87980a3d9702"
+                "0049ad43-60b4-4507-bf3c-87980a3d9702",
             );
             expect(sortedGenres[0]?.genres.id).toBe(
-                "0049ad43-60b4-4507-bf3c-87980a3d9702"
+                "0049ad43-60b4-4507-bf3c-87980a3d9702",
             );
             expect(sortedGenres[0]?.genres.name).toBe("Electronic");
             expect(sortedGenres[1]?.genre_id).toBe(
-                "867e8b7b-9f23-4cb4-b9f5-731a4ba6e92e"
+                "867e8b7b-9f23-4cb4-b9f5-731a4ba6e92e",
             );
             expect(sortedGenres[1]?.genres.id).toBe(
-                "867e8b7b-9f23-4cb4-b9f5-731a4ba6e92e"
+                "867e8b7b-9f23-4cb4-b9f5-731a4ba6e92e",
             );
             expect(sortedGenres[1]?.genres.name).toBe("Rock");
 
@@ -369,7 +369,7 @@ describe("POST /api/events/", () => {
                 "description",
                 "cost",
                 "status",
-            ])
+            ]),
         );
     });
 });

@@ -8,7 +8,13 @@ export const userService = {
         if (error) throw error;
         return data;
     },
+    signInUser: async (email: string, password: string) => {
+        const { data, error } = await db.auth.signIn(email, password);
 
+        if (error) throw error;
+
+        return data;
+    },
     getUserById: async (userId: string) => {
         const { data, error } = await db.users.getById(userId);
         if (error) throw error;

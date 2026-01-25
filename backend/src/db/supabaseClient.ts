@@ -22,7 +22,7 @@ export const db = {
             min_start_time: string,
             max_start_time: string,
             min_cost: number,
-            max_cost: number
+            max_cost: number,
         ) => {
             let query = supabase
                 .from("events")
@@ -44,7 +44,7 @@ export const db = {
                             name
                         )
                     )
-                `
+                `,
                 )
                 .gte("start_time", min_start_time)
                 .lte("start_time", max_start_time);
@@ -56,7 +56,7 @@ export const db = {
                 // apply cost range filter
                 // billy's note: NULL costs will be excluded when filtering (standard behavior)
                 query = query.or(
-                    `cost.is.null,and(cost.gte.${min_cost},cost.lte.${max_cost}))`
+                    `cost.is.null,and(cost.gte.${min_cost},cost.lte.${max_cost}))`,
                 );
             }
 
@@ -73,7 +73,7 @@ export const db = {
             source_url?: string | null,
             ingestion_status?: "success" | "failed" | "pending",
             artist_id?: string | null,
-            image?: string | null
+            image?: string | null,
         ) =>
             supabase.from("events").insert({
                 title,
@@ -111,7 +111,7 @@ export const db = {
                         name
                     )
                 )
-            `
+            `,
                 )
                 .eq("id", eventId)
                 .single(),
@@ -136,12 +136,12 @@ export const db = {
         getByVenueTimeTitle: (
             venue_id: string,
             min_start_time: string,
-            max_start_time: string
+            max_start_time: string,
         ) =>
             supabase
                 .from("events")
                 .select(
-                    "id, venue_id, start_time, title, description, cost, source_url, artist_id, image, status, source_type, ingestion_status"
+                    "id, venue_id, start_time, title, description, cost, source_url, artist_id, image, status, source_type, ingestion_status",
                 )
                 .eq("venue_id", venue_id)
                 .gte("start_time", min_start_time)
@@ -161,7 +161,7 @@ export const db = {
                 ingestion_status?: "success" | "failed" | "pending";
                 artist_id?: string | null;
                 image?: string | null;
-            }
+            },
         ) =>
             supabase
                 .from("events")
@@ -194,7 +194,7 @@ export const db = {
             name: string,
             bio?: string | undefined,
             image?: string | undefined,
-            created_at?: string | undefined
+            created_at?: string | undefined,
         ) =>
             supabase
                 .from("artists")
@@ -255,7 +255,7 @@ export const db = {
                             longitude
                         )
                     )
-                `
+                `,
                 )
                 .eq("user_id", userId)
                 .order("created_at", { ascending: false }),
@@ -310,7 +310,7 @@ export const db = {
             email: string,
             username: string | undefined,
             profile_picture: string | undefined,
-            bio: string | undefined
+            bio: string | undefined,
         ) =>
             supabase
                 .from("users")
@@ -339,7 +339,7 @@ export const db = {
         // validate JWT token with Supabase Auth
         validateJWT: (token: string) => supabase.auth.getUser(token),
 
-        // sign up new user in Supabase Auth
+        // sign up new user in Supabase Auth, cascades delete to public.user table
         signUp: (email: string, password: string) =>
             supabase.auth.signUp({ email, password }),
 
@@ -349,5 +349,8 @@ export const db = {
 
         // sign out user (optional, for future use)
         signOut: () => supabase.auth.signOut(),
+
+        // delete user by id, cascades delete to public.user table
+        deleteUser: (id: string) => supabase.auth.admin.deleteUser(id),
     },
 };

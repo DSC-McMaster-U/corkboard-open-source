@@ -19,7 +19,7 @@ router.get(
         }
 
         res.status(200).json({ user: user });
-    }
+    },
 );
 
 // POST /api/users/
@@ -38,10 +38,13 @@ router.post("/", async (req: Request, res: Response) => {
 
     userService
         .signUpUser(email, password)
-        .then((authRes) => {
+        .then((_) => {
+            return userService.signInUser(email, password);
+        })
+        .then((signInRes) => {
             res.status(200).json({
                 success: true,
-                jwt: authRes.session?.access_token,
+                jwt: signInRes.session.access_token,
             });
         })
         .catch((err: Error) => {
