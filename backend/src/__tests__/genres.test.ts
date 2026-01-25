@@ -32,8 +32,6 @@ describe("GET /api/genres", () => {
             id: "0049ad43-60b4-4507-bf3c-87980a3d9702",
         };
 
-        console.log(response.body);
-
         expect(response.statusCode).toBe(200);
         expect(genresAreEqual(genre, response.body.genre));
         expect(response.body.genres).not.toBeDefined();
@@ -66,8 +64,6 @@ describe("POST /api/genres", () => {
         let response = await request(app).post(path).send({});
 
         logCreatedId(response);
-
-        console.log(response);
 
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe("Name is missing");
