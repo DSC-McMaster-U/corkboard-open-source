@@ -164,6 +164,42 @@ This document provides the input and output specification for all of Corkboard's
 }
 ```
 
+`PUT /api/users/:userId`
+
+- Updates the user's profile information.
+- Errors if the JWT Token is invalid or if the `userId` in the URL does not match the authenticated user's ID.
+- ##### URL Parameters
+    - `userId=<string>` (Required)
+- ##### Request Headers
+    - `Authorization: "Bearer <JWT Token>"`
+    - `Content-Type: "application/json"`
+    - `Accept: "application/json"`
+- ##### Request Body [All fields optional]
+```
+{ 
+    name: string | undefined, 
+    username: string | undefined, 
+    profile_picture: string | undefined, 
+    bio: string | undefined 
+}
+```
+
+- ##### Response Headers
+    - `Content-Type: "application/json"`
+- ##### Response Body
+```
+{ 
+    success: boolean | undefined, 
+    user: {
+            id: string, name: string | undefined, 
+            username: string | undefined, 
+            profile_picture: string | undefined, 
+            bio: string | undefined 
+          } | undefined, 
+    error: string | undefined 
+}
+```
+
 ## Genres
 
 `GET /api/genres`
