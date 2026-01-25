@@ -219,16 +219,8 @@ export default function EventsScreen() {
 
   return (
 
-    <SafeAreaView className='bg-[#AE6E4E] flex-1' edges={['top', 'left', 'right']}>
-      <StatusBar barStyle="light-content" backgroundColor="#411900" />
-
-      {/* Temporary header */}
-      <View className="h-16 px-4 justify-end pb-3 bg-[#AE6E4E]">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-xl font-semibold text-white">Corkboard - Shows Near You</Text>
-          <View className="w-8 h-8 rounded-full bg-blue-300" />
-        </View>
-      </View>
+    <SafeAreaView className="flex-1" edges={['left', 'right']}>
+      <StatusBar barStyle="light-content" />
 
       <View className="flex-1 bg-[#FFF0E2]">
         <View className="px-4 py-2 bg-[#FFF0E2] pt-2">
