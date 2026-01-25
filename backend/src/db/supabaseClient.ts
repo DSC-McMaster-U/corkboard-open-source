@@ -300,6 +300,18 @@ export const db = {
         getByEmail: (email: string) =>
             supabase.from("users").select("*").eq("email", email).single(),
 
+        updateUser: (
+            id: string,
+            name: string | undefined,
+            username: string | undefined,
+            profile_picture: string | undefined,
+            bio: string | undefined,
+        ) =>
+            supabase
+                .from("users")
+                .update({ name, username, profile_picture, bio })
+                .eq("id", id),
+
         /**
          * Creates a user directly in the users table
          * @deprecated Users should be created through a trigger on sign-up.

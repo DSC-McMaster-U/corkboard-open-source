@@ -15,6 +15,25 @@ export const userService = {
 
         return data;
     },
+    updateUser: async (
+        id: string,
+        name: string | undefined,
+        username: string | undefined,
+        profile_picture: string | undefined,
+        bio: string | undefined,
+    ) => {
+        const { data, error } = await db.users.updateUser(
+            id,
+            name,
+            username,
+            profile_picture,
+            bio,
+        );
+
+        if (error) throw error;
+
+        return data;
+    },
     getUserById: async (userId: string) => {
         const { data, error } = await db.users.getById(userId);
         if (error) throw error;

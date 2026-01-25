@@ -247,7 +247,7 @@ This document provides the input and output specification for all of Corkboard's
 
 `POST /api/users/`
 
-- Attempts to create and authenticate a user using the provided credentials, returns a JWT for the new user.
+- Attempts to create and authenticate a user using the provided credentials and information, returns a JWT for the new user.
 - Errors if the email is already in use and the password does not match.
 - NOTE: Under the current implementation, this will login a user if they try to sign up with an existing email and password combination.
 - ##### Request Headers
@@ -258,7 +258,11 @@ This document provides the input and output specification for all of Corkboard's
 ```
 {
     email: string,
-    password: string
+    password: string,
+    name: string | undefined,
+    username: string | undefined,
+    profile_pictrue: string,
+    bio: string | undefined
 }
 ```
 

@@ -24,7 +24,14 @@ router.get(
 
 // POST /api/users/
 router.post("/", async (req: Request, res: Response) => {
-    let { email = undefined, password = undefined } = req.body;
+    let {
+        email = undefined,
+        password = undefined,
+        name = undefined,
+        username = undefined,
+        profile_picture = undefined,
+        bio = undefined,
+    } = req.body;
 
     if (email === "" || email === undefined) {
         res.status(400).json({ error: "Non-empty email is required" });
@@ -38,13 +45,25 @@ router.post("/", async (req: Request, res: Response) => {
 
     userService
         .signUpUser(email, password)
-        .then((_) => {
-            return userService.signInUser(email, password);
-        })
-        .then((signInRes) => {
+        .then(async (signUpRes) => {
+            let signInResult = await userService.signInUser(email, password);
+
+            // Endpoint still succeeds if this step fails, as having null information does not prevent user sign-in
+            await userService
+                .updateUser(
+                    signUpRes.user?.id!,
+                    name,
+                    username,
+                    profile_picture,
+                    bio,
+                )
+                .catch((err) => {
+                    console.warn("Error updating user information: ", err);
+                });
+
             res.status(200).json({
                 success: true,
-                jwt: signInRes.session.access_token,
+                jwt: signInResult.session.access_token,
             });
         })
         .catch((err: Error) => {
