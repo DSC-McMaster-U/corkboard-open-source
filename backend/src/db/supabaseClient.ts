@@ -22,7 +22,8 @@ export const db = {
             min_start_time: string,
             max_start_time: string,
             min_cost: number,
-            max_cost: number
+            max_cost: number,
+            includeArchived: boolean = false
         ) => {
             let query = supabase
                 .from("events")
@@ -43,11 +44,22 @@ export const db = {
                             id,
                             name
                         )
+                    ),
+                    artists (
+                        id,
+                        name,
+                        bio,
+                        image
                     )
-                `
+                `,
                 )
                 .gte("start_time", min_start_time)
                 .lte("start_time", max_start_time);
+
+            // filter out archived events by default
+            if (!includeArchived) {
+                query = query.eq("archived", false);
+            }
 
             // handle NULL costs: only filter by cost if user specified a range
             const isDefaultCostRange =
@@ -55,7 +67,9 @@ export const db = {
             if (!isDefaultCostRange) {
                 // apply cost range filter
                 // billy's note: NULL costs will be excluded when filtering (standard behavior)
-                query = query.or(`cost.is.null,and(cost.gte.${min_cost},cost.lte.${max_cost}))`);
+                query = query.or(
+                    `cost.is.null,and(cost.gte.${min_cost},cost.lte.${max_cost}))`,
+                );
             }
 
             return query.limit(limit);
@@ -71,8 +85,8 @@ export const db = {
             source_url?: string | null,
             ingestion_status?: "success" | "failed" | "pending",
             artist_id?: string | null,
-            image?: string | null
-        ) =>    
+            image?: string | null,
+        ) =>
             supabase.from("events").insert({
                 title,
                 venue_id,
@@ -84,9 +98,8 @@ export const db = {
                 source_url,
                 ingestion_status,
                 artist_id,
-                image
+                image,
             }),
-         
 
         // get events by id
         getById: (eventId: string) =>
@@ -109,8 +122,14 @@ export const db = {
                         id,
                         name
                     )
+                ),
+                artists (
+                    id,
+                    name,
+                    bio,
+                    image
                 )
-            `
+            `,
                 )
                 .eq("id", eventId)
                 .single(),
@@ -126,11 +145,38 @@ export const db = {
             source_type: string | undefined;
             source_url: string | undefined;
             image: string | undefined;
+            artist_id?: string | undefined;
         }) => supabase.from("events").insert(eventData).select().single(),
 
         // delete event by ID
         deleteById: (eventId: string) =>
             supabase.from("events").delete().eq("id", eventId),
+
+        // archive an event by ID
+        archiveById: (eventId: string) =>
+            supabase
+                .from("events")
+                .update({ archived: true })
+                .eq("id", eventId)
+                .select()
+                .single(),
+
+        // unarchive an event by ID
+        unarchiveById: (eventId: string) =>
+            supabase
+                .from("events")
+                .update({ archived: false })
+                .eq("id", eventId)
+                .select()
+                .single(),
+
+        // archive all past events
+        archivePastEvents: () =>
+            supabase
+                .from("events")
+                .update({ archived: true })
+                .lt("start_time", new Date().toISOString())
+                .eq("archived", false),
 
         getByVenueTimeTitle: (
             venue_id: string,
@@ -139,24 +185,35 @@ export const db = {
         ) =>
             supabase
                 .from("events")
-                .select("id, venue_id, start_time, title, description, cost, source_url, artist_id, image, status, source_type, ingestion_status")
+                .select(
+                    "id, venue_id, start_time, title, description, cost, source_url, artist_id, image, status, source_type, ingestion_status",
+                )
                 .eq("venue_id", venue_id)
                 .gte("start_time", min_start_time)
                 .lte("start_time", max_start_time),
 
-        updateByID: (id: string, patch: {
-            title?: string;
-            venue_id?: string;
-            start_time?: string;
-            description?: string | null;
-            cost?: number | null;
-            status?: "published" | "draft" | "hidden";
-            source_type?: "manual" | string | null;
-            source_url?: string | null;
-            ingestion_status?: "success" | "failed" | "pending";
-            artist_id?: string | null;
-            image?: string | null;
-        }) => supabase.from("events").update(patch).eq("id", id).select().single(),
+        updateByID: (
+            id: string,
+            patch: {
+                title?: string;
+                venue_id?: string;
+                start_time?: string;
+                description?: string | null;
+                cost?: number | null;
+                status?: "published" | "draft" | "hidden";
+                source_type?: "manual" | string | null;
+                source_url?: string | null;
+                ingestion_status?: "success" | "failed" | "pending";
+                artist_id?: string | null;
+                image?: string | null;
+            },
+        ) =>
+            supabase
+                .from("events")
+                .update(patch)
+                .eq("id", id)
+                .select()
+                .single(),
 
         deleteForVenue: (venueId: string) =>
             supabase.from("events").delete().eq("venue_id", venueId),
@@ -164,7 +221,7 @@ export const db = {
     artists: {
         getAll: (limit = 50) =>
             supabase.from("artists").select("*").limit(limit),
-        
+
         getById: (artistId: string) =>
             supabase.from("artists").select("*").eq("id", artistId).single(),
 
@@ -176,16 +233,24 @@ export const db = {
             bio?: string | undefined;
             image?: string | undefined;
             created_at?: string | undefined;
-        }) =>
-            supabase.from("artists").insert(artistData).select().single(),
-        
-        add: (name: string, bio?: string | undefined, image?: string | undefined, created_at?: string | undefined) =>    
-            supabase.from("artists").insert({
-                name,
-                bio,
-                image,
-                created_at
-            }).select().single(),
+        }) => supabase.from("artists").insert(artistData).select().single(),
+
+        add: (
+            name: string,
+            bio?: string | undefined,
+            image?: string | undefined,
+            created_at?: string | undefined,
+        ) =>
+            supabase
+                .from("artists")
+                .insert({
+                    name,
+                    bio,
+                    image,
+                    created_at,
+                })
+                .select()
+                .single(),
     },
     venues: {
         getAll: (limit = 50) =>
@@ -233,9 +298,15 @@ export const db = {
                             venue_type,
                             latitude,
                             longitude
+                        ),
+                        artists (
+                            id,
+                            name,
+                            bio,
+                            image
                         )
                     )
-                `
+                `,
                 )
                 .eq("user_id", userId)
                 .order("created_at", { ascending: false }),
@@ -276,19 +347,155 @@ export const db = {
         getById: (userId: string) =>
             supabase.from("users").select("*").eq("id", userId).single(),
 
+        // get user by ID with all favorites (genres, venues, artists)
+        getByIdWithFavorites: (userId: string) =>
+            supabase
+                .from("users")
+                .select(
+                    `
+                    *,
+                    user_favorite_genres (
+                        genre_id,
+                        genres (
+                            id,
+                            name
+                        )
+                    ),
+                    user_favorite_venues (
+                        venue_id,
+                        venues (
+                            id,
+                            name,
+                            address,
+                            venue_type
+                        )
+                    ),
+                    user_favorite_artists (
+                        artist_id,
+                        artists (
+                            id,
+                            name,
+                            bio,
+                            image
+                        )
+                    )
+                `
+                )
+                .eq("id", userId)
+                .single(),
+
+        // get user by username
+        getByUsername: (username: string) =>
+            supabase
+                .from("users")
+                .select("*")
+                .eq("username", username)
+                .maybeSingle(),
+
         // get user by email (for duplicate check)
         getByEmail: (email: string) =>
-            supabase.from("users").select("*").eq("email", email).single(), // Changed to .single() from maybeSingle() for consistent erroring
+            supabase.from("users").select("*").eq("email", email).single(),
 
-        // create user
-        create: (name: string, email: string) =>
-            supabase.from("users").insert({ name, email }).select().single(),
+        updateUser: (
+            id: string,
+            name: string | undefined,
+            username: string | undefined,
+            profile_picture: string | undefined,
+            bio: string | undefined,
+        ) =>
+            supabase
+                .from("users")
+                .update({ name, username, profile_picture, bio })
+                .eq("id", id),
+
+        /**
+         * Creates a user directly in the users table
+         * @deprecated Users should be created through a trigger on sign-up.
+         * Should visit the idea of removing this function if it is not needed
+         */
+        create: (
+            name: string,
+            email: string,
+            username: string | undefined,
+            profile_picture: string | undefined,
+            bio: string | undefined,
+        ) =>
+            supabase
+                .from("users")
+                .insert({ name, email, username, profile_picture, bio })
+                .select()
+                .single(),
+
+        // update user profile
+        updateProfile: (
+            userId: string,
+            updates: {
+                username?: string;
+                name?: string;
+                profile_picture?: string;
+                bio?: string;
+            }
+        ) =>
+            supabase
+                .from("users")
+                .update(updates)
+                .eq("id", userId)
+                .select()
+                .single(),
+
+        // add favorite genre
+        addFavoriteGenre: (userId: string, genreId: string) =>
+            supabase
+                .from("user_favorite_genres")
+                .insert({ user_id: userId, genre_id: genreId })
+                .select()
+                .single(),
+
+        // remove favorite genre
+        removeFavoriteGenre: (userId: string, genreId: string) =>
+            supabase
+                .from("user_favorite_genres")
+                .delete()
+                .eq("user_id", userId)
+                .eq("genre_id", genreId),
+
+        // add favorite venue
+        addFavoriteVenue: (userId: string, venueId: string) =>
+            supabase
+                .from("user_favorite_venues")
+                .insert({ user_id: userId, venue_id: venueId })
+                .select()
+                .single(),
+
+        // remove favorite venue
+        removeFavoriteVenue: (userId: string, venueId: string) =>
+            supabase
+                .from("user_favorite_venues")
+                .delete()
+                .eq("user_id", userId)
+                .eq("venue_id", venueId),
+
+        // add favorite artist
+        addFavoriteArtist: (userId: string, artistId: string) =>
+            supabase
+                .from("user_favorite_artists")
+                .insert({ user_id: userId, artist_id: artistId })
+                .select()
+                .single(),
+
+        // remove favorite artist
+        removeFavoriteArtist: (userId: string, artistId: string) =>
+            supabase
+                .from("user_favorite_artists")
+                .delete()
+                .eq("user_id", userId)
+                .eq("artist_id", artistId),
     },
     genres: {
         // get all genres
         getAll: () => supabase.from("genres").select("*"),
 
-        // get genre by name (for duplicate check)
+        // get genre by name
         getByName: (name: string) =>
             supabase.from("genres").select("*").eq("name", name).single(), // Changed to .single() from maybeSingle() for consistent erroring
 
@@ -300,12 +507,47 @@ export const db = {
         deleteById: (genreId: string) =>
             supabase.from("genres").delete().eq("id", genreId),
     },
+    artists: {
+        // get all artists
+        getAll: (limit = 50) =>
+            supabase.from("artists").select("*").limit(limit),
+        
+        // get artist by ID
+        getById: (artistId: string) =>
+            supabase.from("artists").select("*").eq("id", artistId).single(),
+
+        // get artist by name (for duplicate check)
+        getByName: (name: string) =>
+            supabase.from("artists").select("*").eq("name", name).maybeSingle(),
+
+        // create artist (with object parameter)
+        create: (artistData: {
+            name: string;
+            bio?: string | undefined;
+            image?: string | undefined;
+            created_at?: string | undefined;
+        }) =>
+            supabase.from("artists").insert(artistData).select().single(),
+
+        // add artist (with individual parameters - convenience method)
+        add: (name: string, bio?: string | undefined, image?: string | undefined, created_at?: string | undefined) =>    
+            supabase.from("artists").insert({
+                name,
+                bio,
+                image,
+                created_at
+            }).select().single(),
+    },
     healthCheck: () => supabase.from("venues").select("count").limit(1), // returns the number of venues
+
+    // URGENT: auth methods are temporarily disabled to prevent creating users with invalid emails
+    // TODO: re-enable after email validation is implemented
+    /*
     auth: {
         // validate JWT token with Supabase Auth
         validateJWT: (token: string) => supabase.auth.getUser(token),
 
-        // sign up new user in Supabase Auth
+        // sign up new user in Supabase Auth, cascades delete to public.user table
         signUp: (email: string, password: string) =>
             supabase.auth.signUp({ email, password }),
 
@@ -315,5 +557,9 @@ export const db = {
 
         // sign out user (optional, for future use)
         signOut: () => supabase.auth.signOut(),
+
+        // delete user by id, cascades delete to public.user table
+        deleteUser: (id: string) => supabase.auth.admin.deleteUser(id),
     },
+    */
 };

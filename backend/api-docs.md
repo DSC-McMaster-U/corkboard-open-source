@@ -245,6 +245,38 @@ This document provides the input and output specification for all of Corkboard's
 }
 ```
 
+`POST /api/users/`
+
+- Attempts to create and authenticate a user using the provided credentials and information, returns a JWT for the new user.
+- Errors if the email is already in use and the password does not match.
+- ##### Request Headers
+    - `Content-Type: "application/json"`
+    - `Accept: "application/json"`
+- ##### Request Body
+
+```
+{
+    email: string,
+    password: string,
+    name: string | undefined,
+    username: string | undefined,
+    profile_pictrue: string,
+    bio: string | undefined
+}
+```
+
+- ##### Response Headers
+    - `Content-Type: "application/json"`
+- ##### Response Body
+
+```
+{
+    jwt: string | undefined
+    success: bool | undefined
+    error: string | undefined
+}
+```
+
 ## Venues
 
 `GET /api/venues`

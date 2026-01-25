@@ -19,30 +19,55 @@ router.get(
         }
 
         res.status(200).json({ user: user });
-    }
+    },
 );
 
 // POST /api/users/
 router.post("/", async (req: Request, res: Response) => {
-    let { name = undefined, email = undefined } = req.body;
+    let {
+        email = undefined,
+        password = undefined,
+        name = undefined,
+        username = undefined,
+        profile_picture = undefined,
+        bio = undefined,
+    } = req.body;
 
-    if (name === "" || name === undefined) {
-        res.status(412).json({ error: "Non-empty name is required" });
+    if (email === "" || email === undefined) {
+        res.status(400).json({ error: "Non-empty email is required" });
         return;
     }
 
-    if (email === "" || email === undefined) {
-        res.status(412).json({ error: "Non-empty email is required" });
+    if (password === "" || password === undefined) {
+        res.status(400).json({ error: "Non-empty password is required" });
         return;
     }
 
     userService
-        .createUser(name, email)
-        .then((user) => {
-            res.status(200).json({ success: true, user: user });
+        .signUpUser(email, password)
+        .then(async (signUpRes) => {
+            let signInResult = await userService.signInUser(email, password);
+
+            // Endpoint still succeeds if this step fails, as having null information does not prevent user sign-in
+            await userService
+                .updateUser(
+                    signUpRes.user?.id!,
+                    name,
+                    username,
+                    profile_picture,
+                    bio,
+                )
+                .catch((err) => {
+                    console.warn("Error updating user information: ", err);
+                });
+
+            res.status(200).json({
+                success: true,
+                jwt: signInResult.session.access_token,
+            });
         })
         .catch((err: Error) => {
-            res.status(500).json({ error: err.message });
+            res.status(500).json({ success: false, error: err.message });
         });
 });
 
