@@ -249,7 +249,6 @@ This document provides the input and output specification for all of Corkboard's
 
 - Attempts to create and authenticate a user using the provided credentials and information, returns a JWT for the new user.
 - Errors if the email is already in use and the password does not match.
-- NOTE: Under the current implementation, this will login a user if they try to sign up with an existing email and password combination.
 - ##### Request Headers
     - `Content-Type: "application/json"`
     - `Accept: "application/json"`

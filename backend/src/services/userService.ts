@@ -3,6 +3,12 @@ import type { Request, Response } from "express";
 
 export const userService = {
     signUpUser: async (email: string, password: string) => {
+        const { data: email_data, error: _ } = await db.users.getByEmail(email);
+
+        if (email_data["id"] != undefined) {
+            throw "Email already in use";
+        }
+
         const { data, error } = await db.auth.signUp(email, password);
 
         if (error) throw error;
