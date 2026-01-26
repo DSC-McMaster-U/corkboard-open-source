@@ -218,40 +218,40 @@ export const db = {
         deleteForVenue: (venueId: string) =>
             supabase.from("events").delete().eq("venue_id", venueId),
     },
-    artists: {
-        getAll: (limit = 50) =>
-            supabase.from("artists").select("*").limit(limit),
+    // artists: {
+    //     getAll: (limit = 50) =>
+    //         supabase.from("artists").select("*").limit(limit),
 
-        getById: (artistId: string) =>
-            supabase.from("artists").select("*").eq("id", artistId).single(),
+    //     getById: (artistId: string) =>
+    //         supabase.from("artists").select("*").eq("id", artistId).single(),
 
-        getByName: (name: string) =>
-            supabase.from("artists").select("*").eq("name", name).maybeSingle(),
+    //     getByName: (name: string) =>
+    //         supabase.from("artists").select("*").eq("name", name).maybeSingle(),
 
-        create: (artistData: {
-            name: string;
-            bio?: string | undefined;
-            image?: string | undefined;
-            created_at?: string | undefined;
-        }) => supabase.from("artists").insert(artistData).select().single(),
+    //     create: (artistData: {
+    //         name: string;
+    //         bio?: string | undefined;
+    //         image?: string | undefined;
+    //         created_at?: string | undefined;
+    //     }) => supabase.from("artists").insert(artistData).select().single(),
 
-        add: (
-            name: string,
-            bio?: string | undefined,
-            image?: string | undefined,
-            created_at?: string | undefined,
-        ) =>
-            supabase
-                .from("artists")
-                .insert({
-                    name,
-                    bio,
-                    image,
-                    created_at,
-                })
-                .select()
-                .single(),
-    },
+    //     add: (
+    //         name: string,
+    //         bio?: string | undefined,
+    //         image?: string | undefined,
+    //         created_at?: string | undefined,
+    //     ) =>
+    //         supabase
+    //             .from("artists")
+    //             .insert({
+    //                 name,
+    //                 bio,
+    //                 image,
+    //                 created_at,
+    //             })
+    //             .select()
+    //             .single(),
+    // },
     venues: {
         getAll: (limit = 50) =>
             supabase.from("venues").select("*").limit(limit), // returns all venues
@@ -542,7 +542,7 @@ export const db = {
 
     // URGENT: auth methods are temporarily disabled to prevent creating users with invalid emails
     // TODO: re-enable after email validation is implemented
-    /*
+    
     auth: {
         // validate JWT token with Supabase Auth
         validateJWT: (token: string) => supabase.auth.getUser(token),
@@ -561,5 +561,5 @@ export const db = {
         // delete user by id, cascades delete to public.user table
         deleteUser: (id: string) => supabase.auth.admin.deleteUser(id),
     },
-    */
+    
 };

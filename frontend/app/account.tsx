@@ -58,27 +58,27 @@ export default function AccountPage() {
 
         <Stack.Screen options={{ headerShown: false }} />
 
-    {/* Temporary header */}
     <View style={{ height: 44, backgroundColor: '#3E2723' }} />
-        <View
-            style={{
-                backgroundColor: '#AE6E4E',
-                justifyContent: 'center',
-                paddingHorizontal: 16,
-                paddingVertical: 30,
-            }}>
-
+        {/* Header */}
+        <View className="bg-[#AE6E4E] px-4 py-7">
+          <View className="flex-row items-center">
             {/* Back button */}
             <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ position: 'absolute', left: 16 }}>
-                <Ionicons name="arrow-back" size={26} color="white" />
+              onPress={() => router.back()}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              className="w-11 h-11 justify-center"
+            >
+              <Ionicons name="arrow-back" size={26} color="white" />
             </TouchableOpacity>
 
-            {/* Title */}
-            <Text className="text-xl font-semibold text-white text-center">
-                Account
-            </Text>
+            {/* Center title */}
+            <View className="flex-1 items-center">
+              <Text className="text-white text-xl font-semibold">Account</Text>
+            </View>
+
+            {/* Right spacer to keep title centered */}
+            <View className="w-11 h-11" />
+          </View>
         </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
