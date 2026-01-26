@@ -244,10 +244,10 @@ export default function MapScreen() {
         )}
 
         {/* No results banner */}
-        {!loading && !error && events.length === 0 && (
+        {!loading && !error && (events.length === 0 && venues.length === 0) && (
           <View className="absolute inset-x-4 top-5 rounded-lg bg-black/70 px-3 py-2">
             <Text className="text-white text-center text-sm">
-              No events found for this price range.
+              No events found for these filters.
             </Text>
           </View>
         )}
