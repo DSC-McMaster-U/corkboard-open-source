@@ -164,6 +164,42 @@ This document provides the input and output specification for all of Corkboard's
 }
 ```
 
+`PUT /api/users/:userId`
+
+- Updates the user's profile information.
+- Errors if the JWT Token is invalid or if the `userId` in the URL does not match the authenticated user's ID.
+- ##### URL Parameters
+    - `userId=<string>` (Required)
+- ##### Request Headers
+    - `Authorization: "Bearer <JWT Token>"`
+    - `Content-Type: "application/json"`
+    - `Accept: "application/json"`
+- ##### Request Body [All fields optional]
+```
+{ 
+    name: string | undefined, 
+    username: string | undefined, 
+    profile_picture: string | undefined, 
+    bio: string | undefined 
+}
+```
+
+- ##### Response Headers
+    - `Content-Type: "application/json"`
+- ##### Response Body
+```
+{ 
+    success: boolean | undefined, 
+    user: {
+            id: string, name: string | undefined, 
+            username: string | undefined, 
+            profile_picture: string | undefined, 
+            bio: string | undefined 
+          } | undefined, 
+    error: string | undefined 
+}
+```
+
 ## Genres
 
 `GET /api/genres`
@@ -242,6 +278,38 @@ This document provides the input and output specification for all of Corkboard's
         id: string,
     } | undefined,
     error: string | undefined,
+}
+```
+
+`POST /api/users/`
+
+- Attempts to create and authenticate a user using the provided credentials and information, returns a JWT for the new user.
+- Errors if the email is already in use and the password does not match.
+- ##### Request Headers
+    - `Content-Type: "application/json"`
+    - `Accept: "application/json"`
+- ##### Request Body
+
+```
+{
+    email: string,
+    password: string,
+    name: string | undefined,
+    username: string | undefined,
+    profile_pictrue: string,
+    bio: string | undefined
+}
+```
+
+- ##### Response Headers
+    - `Content-Type: "application/json"`
+- ##### Response Body
+
+```
+{
+    jwt: string | undefined
+    success: bool | undefined
+    error: string | undefined
 }
 ```
 

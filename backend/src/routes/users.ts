@@ -19,30 +19,102 @@ router.get(
         }
 
         res.status(200).json({ user: user });
-    }
+    },
 );
+
+
+// POST /api/users/:userId - Updates user information
+
+// PUT /api/users/:userId - Updates user profile
+router.put( "/:userId", authService.validateToken, async (req: Request, res: Response) => {
+    const authenticatedUser = authService.getUser(res);
+
+    if (authenticatedUser == undefined) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    // 2. SECURITY CHECK: Ensure URL param matches the logged-in user's ID
+    const targetUserId = req.params.userId;
+
+    if (!targetUserId) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    if (authenticatedUser.id !== targetUserId) {
+      res.status(403).json({ error: "Forbidden: You can only update your own account." });
+      return;
+    }
+
+    // 3. Extract fields (undefined fields are handled by your service)
+    const { name, username, profile_picture, bio } = req.body;
+
+    // 4. Call your existing service
+    try {
+      const data = await userService.updateUser(
+        targetUserId,
+        name,
+        username,
+        profile_picture,
+        bio
+      );
+      
+      res.status(200).json({ success: true, user: data });
+    } catch (err: any) {
+      console.error("Update failed:", err);
+      res.status(500).json({ success: false, error: err.message || "Internal Server Error" });
+    }
+  }
+);
+
 
 // POST /api/users/
 router.post("/", async (req: Request, res: Response) => {
-    let { name = undefined, email = undefined } = req.body;
+    let {
+        email = undefined,
+        password = undefined,
+        name = undefined,
+        username = undefined,
+        profile_picture = undefined,
+        bio = undefined,
+    } = req.body;
 
-    if (name === "" || name === undefined) {
-        res.status(412).json({ error: "Non-empty name is required" });
+    if (email === "" || email === undefined) {
+        res.status(400).json({ error: "Non-empty email is required" });
         return;
     }
 
-    if (email === "" || email === undefined) {
-        res.status(412).json({ error: "Non-empty email is required" });
+    if (password === "" || password === undefined) {
+        res.status(400).json({ error: "Non-empty password is required" });
         return;
     }
 
     userService
-        .createUser(name, email)
-        .then((user) => {
-            res.status(200).json({ success: true, user: user });
+        .signUpUser(email, password)
+        .then(async (signUpRes) => {
+            let signInResult = await userService.signInUser(email, password);
+
+            // Endpoint still succeeds if this step fails, as having null information does not prevent user sign-in
+            await userService
+                .updateUser(
+                    signUpRes.user?.id!,
+                    name,
+                    username,
+                    profile_picture,
+                    bio,
+                )
+                .catch((err) => {
+                    console.warn("Error updating user information: ", err);
+                });
+
+            res.status(200).json({
+                success: true,
+                jwt: signInResult.session.access_token,
+            });
         })
         .catch((err: Error) => {
-            res.status(500).json({ error: err.message });
+            res.status(500).json({ success: false, error: err.message });
         });
 });
 

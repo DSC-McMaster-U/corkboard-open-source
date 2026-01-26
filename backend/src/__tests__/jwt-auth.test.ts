@@ -16,7 +16,9 @@ const TEST_USER_PASSWORD = "testpassword123";
 
 const TEST_EVENT_ID = "2430b29f-0bd3-4d49-9b70-9c8a0b26bf8e"; // "Test Event"
 
-describe("JWT Authentication", () => {
+// URGENT: tests temporarily skipped to prevent creating users with invalid emails
+// TODO: re-enable after email validation is implemented
+describe.skip("JWT Authentication", () => {
     let jwtToken: string;
     let supabase: ReturnType<typeof createClient>;
 
@@ -167,7 +169,9 @@ describe("JWT Authentication", () => {
     });
 });
 
-describe("Sign-In Business Logic", () => {
+// URGENT: tests temporarily skipped to prevent creating users with invalid emails
+// TODO: re-enable after email validation is implemented
+describe.skip("Sign-In Business Logic", () => {
     // test sign-in using db layer methods
     
     // 1. test sign-in with valid credentials

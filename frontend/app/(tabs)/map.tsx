@@ -177,16 +177,9 @@ export default function MapScreen() {
     };
 
   return (
-    <SafeAreaView className='bg-[#AE6E4E] flex-1' edges={[ 'top', 'left', 'right' ]}>
+    <SafeAreaView className="flex-1" edges={['left', 'right']}>
       <StatusBar barStyle="light-content" backgroundColor="#411900" />
 
-      {/* Temporary header */}
-      <View className="h-16 px-4 justify-end pb-3 bg-[#AE6E4E]">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-xl font-semibold text-white">Corkboard - Shows Near You</Text>
-          <View className="w-8 h-8 rounded-full bg-blue-300" />
-        </View>
-      </View>
       
       <View className="flex-1">
         {/* Map */}
@@ -251,10 +244,10 @@ export default function MapScreen() {
         )}
 
         {/* No results banner */}
-        {!loading && !error && events.length === 0 && (
+        {!loading && !error && (events.length === 0 && venues.length === 0) && (
           <View className="absolute inset-x-4 top-5 rounded-lg bg-black/70 px-3 py-2">
             <Text className="text-white text-center text-sm">
-              No events found for this price range.
+              No events found for these filters.
             </Text>
           </View>
         )}
