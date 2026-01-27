@@ -5,6 +5,7 @@
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 import { get } from "http";
+import { supabaseStorage } from "./supabaseStorage.js";
 
 // Load environment variables
 dotenv.config();
@@ -538,11 +539,25 @@ export const db = {
                 created_at
             }).select().single(),
     },
-    healthCheck: () => supabase.from("venues").select("count").limit(1), // returns the number of venues
+    storage: {
+        // upload file to storage bucket
+        upload: (bucket: 'events' | 'artists' | 'users', filePath: string, file: File | Blob | Buffer, options?: { contentType?: string; cacheControl?: string; upsert?: boolean }) =>
+            supabaseStorage.storage.from(bucket).upload(filePath, file, options), 
 
-    // URGENT: auth methods are temporarily disabled to prevent creating users with invalid emails
-    // TODO: re-enable after email validation is implemented
+        // get public URL for a file
+        getPublicUrl: (bucket: 'events' | 'artists' | 'users', filePath: string) => {
+            const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+            return { data: { publicUrl: data.publicUrl } };
+        },
     
+        // delete file from storage
+        delete: (bucket: 'events' | 'artists' | 'users', filePath: string) =>
+            supabaseStorage.storage.from(bucket).remove([filePath]),
+
+        // list files in bucket
+        list: (bucket: 'events' | 'artists' | 'users', path?: string) =>
+            supabaseStorage.storage.from(bucket).list(path),
+    },
     auth: {
         // validate JWT token with Supabase Auth
         validateJWT: (token: string) => supabase.auth.getUser(token),
@@ -561,5 +576,5 @@ export const db = {
         // delete user by id, cascades delete to public.user table
         deleteUser: (id: string) => supabase.auth.admin.deleteUser(id),
     },
-    
+    healthCheck: () => supabase.from("venues").select("count").limit(1), // returns the number of venues
 };
