@@ -16,7 +16,7 @@ export function AppHeader({ title, showBack = false }: Props) {
   return (
     <View style={{ backgroundColor: '#3E2723' }}>
       {/* Top brown strip */}
-      <View style={{ height: 22, backgroundColor: '#3E2723' }} />
+      <View style={{ height: 45, backgroundColor: '#3E2723' }} />
 
       {/* Main header */}
       <View
