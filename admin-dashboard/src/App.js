@@ -12,10 +12,29 @@ function toDateTimeLocal(iso) {
   )}:${pad(d.getMinutes())}`;
 }
 
+function normalize(s) {
+  return (s || "").toString().toLowerCase().trim();
+}
+
+function eventSearchBlob(e) {
+  return normalize(
+    [
+      e.title,
+      e.artist,
+      e.description,
+      e.source_url,
+      e.venues?.name,
+      e.venues?.address,
+    ]
+      .filter(Boolean)
+      .join(" ")
+  );
+}
+
 export default function App() {
   const [events, setEvents] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
-
+  const [search, setSearch] = useState("");
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -30,10 +49,29 @@ export default function App() {
   const [err, setErr] = useState(null);
   const [msg, setMsg] = useState(null);
 
+  const filteredSortedEvents = useMemo(() => {
+    const q = normalize(search);
+    const list = [...events];
+
+    list.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+
+    if (!q) return list;
+    return list.filter((e) => eventSearchBlob(e).includes(q));
+  }, [events, search]);
+
   const selected = useMemo(
-    () => events.find((e) => e.id === selectedId) || null,
-    [events, selectedId]
+    () => filteredSortedEvents.find((e) => e.id === selectedId) || null,
+    [filteredSortedEvents, selectedId]
   );
+
+  useEffect(() => {
+    if (!filteredSortedEvents.length) {
+      setSelectedId(null);
+      return;
+    }
+    const stillExists = filteredSortedEvents.some((e) => e.id === selectedId);
+    if (!stillExists) setSelectedId(filteredSortedEvents[0].id);
+  }, [filteredSortedEvents, selectedId]);
 
   const dirty = useMemo(() => {
     if (!selected) return false;
@@ -56,7 +94,7 @@ export default function App() {
     try {
       const list = await getEvents(200);
       setEvents(list);
-      if (list.length && !selectedId) setSelectedId(list[0].id);
+      // selection will be handled by the "keep selection valid" effect
       setMsg(`Loaded ${list.length} events`);
     } catch (e) {
       setErr(String(e.message || e));
@@ -67,6 +105,7 @@ export default function App() {
 
   useEffect(() => {
     refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -108,10 +147,31 @@ export default function App() {
           {loading ? "Refreshing..." : "Refresh events"}
         </button>
 
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search title, venue, artist..."
+          style={{
+            width: "80%",
+            padding: 10,
+            border: "1px solid #ddd",
+            borderRadius: 8,
+            marginBottom: 10,
+          }}
+        />
+
+        <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 10 }}>
+          Showing {filteredSortedEvents.length} of {events.length}
+        </div>
+
         {err && <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{err}</div>}
         {msg && <div style={{ color: "green" }}>{msg}</div>}
 
-        <EventList events={events} selectedId={selectedId} onSelect={setSelectedId} />
+        <EventList
+          events={filteredSortedEvents}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+        />
       </div>
 
       <div style={{ padding: 16, overflow: "auto" }}>
